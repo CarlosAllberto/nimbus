@@ -1,0 +1,68 @@
+import Foundation
+
+enum FormSlice {
+    case sliceA
+    case sliceB
+}
+
+enum FormToolKind: String, CaseIterable {
+    // Slice A
+    case whoisScan = "whois-scan"
+    case dnsCheck = "dns-check"
+    case siteSpeed = "site-speed"
+    case wordpressInspector = "wordpress-inspector"
+    case policyGenerator = "policy-generator"
+    case contractPDF = "contract-pdf"
+    case qrCode = "qrcode"
+
+    // Slice B
+    case copyGenerator = "copy-generator"
+    case jsonCreator = "json-creator"
+    case responsiveFontClamp = "responsive-font-clamp"
+    case htmlMinify = "html-minify"
+    case jsMinify = "js-minify"
+    case passwordGenerator = "password-generator"
+    case colorConvert = "color-convert"
+    case contrastCheck = "contrast-check"
+    case waLink = "wa-link"
+
+    var slice: FormSlice {
+        switch self {
+        case .whoisScan, .dnsCheck, .siteSpeed, .wordpressInspector,
+             .policyGenerator, .contractPDF, .qrCode:
+            .sliceA
+        case .copyGenerator, .jsonCreator, .responsiveFontClamp, .htmlMinify,
+             .jsMinify, .passwordGenerator, .colorConvert, .contrastCheck, .waLink:
+            .sliceB
+        }
+    }
+}
+
+struct FormToolConfiguration: Equatable {
+    let kind: FormToolKind
+    let actionTitle: String
+
+    static func configuration(for toolID: String) -> FormToolConfiguration? {
+        guard let kind = FormToolKind(rawValue: toolID) else { return nil }
+        let actionTitle: String
+        switch kind {
+        case .whoisScan: actionTitle = "Run WHOIS Scan"
+        case .dnsCheck: actionTitle = "Check DNS"
+        case .siteSpeed: actionTitle = "Analyze Site Speed"
+        case .wordpressInspector: actionTitle = "Inspect Site"
+        case .policyGenerator: actionTitle = "Generate Policy"
+        case .contractPDF: actionTitle = "Create Contract PDF"
+        case .qrCode: actionTitle = "Create QR Code"
+        case .copyGenerator: actionTitle = "Generate Copy"
+        case .jsonCreator: actionTitle = "Create JSON"
+        case .responsiveFontClamp: actionTitle = "Generate Clamp"
+        case .htmlMinify: actionTitle = "Process HTML"
+        case .jsMinify: actionTitle = "Process JavaScript"
+        case .passwordGenerator: actionTitle = "Generate Password"
+        case .colorConvert: actionTitle = "Convert Color"
+        case .contrastCheck: actionTitle = "Check Contrast"
+        case .waLink: actionTitle = "Create Link"
+        }
+        return .init(kind: kind, actionTitle: actionTitle)
+    }
+}

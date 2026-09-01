@@ -1,0 +1,228 @@
+# Lessons
+
+Append-only log of notable problems, bugs, and decisions encountered while
+working on this codebase. Newest entries first. When a lesson yields a durable
+rule, promote it to [rules.md](rules.md).
+
+## Format
+
+### YYYY-MM-DD — short title
+
+- **Problem:** what was observed (error, crash, wrong behavior, bad decision).
+- **Cause:** root cause.
+- **Rule:** the actionable takeaway (also promoted to rules.md if durable).
+- **Context:** links, files, or commits relevant to this entry.
+
+## Entries
+
+### 2026-08-31 — SwiftUI `.shadow` over a glass backdrop paints a square halo
+
+- **Problem:** the Quick Drop card had a dark square halo around its rounded
+  corners. Adding a transparent margin only made the square bigger, and
+  `.clipShape` plus `.compositingGroup()` only made it fainter.
+- **Cause:** `.shadow` derives its silhouette from the alpha of what it
+  shadows. A `glassEffect` backdrop (same for an `NSVisualEffectView` through
+  `NSViewRepresentable`) is composited outside the SwiftUI layer, so there is
+  no alpha to read and the modifier falls back to the bounding box.
+- **Rule:** a panel whose background is glass or vibrancy gets its shadow from
+  the window (`hasShadow = true`, plus `invalidateShadow()` after the content is
+  on screen), not from `.shadow`. The tradeoff is that the window shadow does
+  not animate with an entrance transform.
+- **Context:** `Sources/Nimbus/QuickDropView.swift`, `QuickDropPanel.swift`.
+  Diagnosed by temporarily colouring the shadow red — the halo turned red,
+  which settled in one build what several guesses had not.
+
+### 2026-08-31 — `GlassEffectContainer` renders across its whole rect
+
+- **Problem:** the glass background painted a square region behind the rounded
+  card even with the corner radius passed to `glassEffect(_:in:)`.
+- **Cause:** `GlassEffectContainer` exists so several glass elements can share
+  one backdrop; wrapping a single element made it render across the container.
+- **Rule:** with one glass element, apply `.glassEffect(_:in:)` directly and
+  skip the container.
+- **Context:** `Sources/Nimbus/GlassBackground.swift`.
+
+### 2026-08-31 — A `.titled` panel sits lower than its requested margin
+
+- **Problem:** the Quick Drop panel appeared far below the intended top inset,
+  with a small empty strip above the card.
+- **Cause:** `styleMask: [.titled, …]` reserves a titlebar, so the window frame
+  was taller than the card and `setFrameOrigin` positioned the frame, not the
+  visible content.
+- **Rule:** a HUD panel is `.borderless` (with `canBecomeKey` overridden so it
+  still takes focus); reserve `.titled` for windows that actually show a
+  titlebar.
+- **Context:** `Sources/Nimbus/QuickDropPanel.swift`.
+
+### 2026-08-31 — `if #available` does not gate symbol resolution
+
+- **Problem:** the Quick Drop panel uses Liquid Glass (`glassEffect`,
+  `GlassEffectContainer`), which exists only in the macOS 26 SDK. Guarding it with
+  `if #available(macOS 26, *)` would still have failed to compile on CI, which
+  runs `macos-14`.
+- **Cause:** availability is a *runtime* check; the symbol must still resolve at
+  *compile* time, against whatever SDK the toolchain has.
+- **Rule:** a symbol from an SDK newer than the oldest toolchain that must build
+  the project needs a compiler gate — `#if compiler(>=6.2)` — with the fallback
+  outside it. Keep the newer-SDK code in its own `@available` type so the `#if`
+  region stays small.
+- **Context:** `Sources/Nimbus/GlassBackground.swift`; `.github/workflows/ci.yml`
+  runs on `macos-14`.
+
+### 2026-08-31 — A file importer sheet resigns its panel's key status
+
+- **Problem:** the Quick Drop panel closes on `windowDidResignKey`. Clicking a
+  well opens `.fileImporter`, which destroyed the panel under the open dialog.
+- **Cause:** `.fileImporter` presents `NSOpenPanel` as a window-modal sheet, and
+  attaching a sheet makes the parent window resign key.
+- **Rule:** a panel that dismisses on resign-key needs a suppression counter
+  (an `Int`, not a `Bool` — several wells can each present one) checked in the
+  single method every dismissal path routes through. Guarding only one caller
+  leaves the other paths free to reintroduce the bug.
+- **Context:** `QuickDropSession.importerDepth`, checked in
+  `QuickDropPanelController.close(restoringPreviousApp:)`.
+
+### 2026-08-31 — Activating a panel is not the same as changing activation policy
+
+- **Problem:** it looked as though showing Quick Drop would need `.regular` to
+  take keyboard focus and show an open panel.
+- **Cause:** conflating activation with activation *policy*. An `.accessory` app
+  can activate, become key, take keystrokes and present `NSOpenPanel`; it simply
+  has no Dock tile. Flipping to `.regular` would flash a Dock icon on every
+  invocation.
+- **Rule:** transient HUD panels activate the app but never touch
+  `setActivationPolicy`; only a real window does. And `applicationDidBecomeActive`
+  must not raise the main window while such a panel is up.
+- **Context:** `Sources/Nimbus/QuickDropPanel.swift`, `NimbusApp.swift`.
+
+### 2026-08-31 — `.frame(width:)` centers a control that hugs its content
+
+- **Problem:** the segmented Strategy picker and the menu pickers in the form
+  tools rendered indented from the left, not flush with the text fields above.
+- **Cause:** `.frame(width:)` centers by default, and a menu or segmented picker
+  sizes to its content rather than filling the frame, so the leftover width
+  showed up as a leading gap. Text fields hid the bug because they fill.
+- **Rule:** a fixed-width control in a leading-aligned form uses
+  `.frame(width:, alignment: .leading)`.
+- **Context:** `menuPicker` in both `FormFieldsSlice*.swift`, site-speed Strategy.
+
+### 2026-08-31 — ScrollView clips field borders and focus rings
+
+- **Problem:** in `FormToolView`, a focused text field lost its ring on the left
+  edge and the last field of the Contract PDF form was cut off at the bottom.
+- **Cause:** a `ScrollView` clips to its bounds, and a field draws its border and
+  focus ring slightly outside its own frame. With the content flush to the scroll
+  bounds there was nothing to draw into.
+- **Rule:** content inside a `ScrollView` gets a small inset on all sides
+  (`focusRingInset` in `FormToolView`); compensate it in the container's own
+  padding so the columns stay aligned with the header.
+- **Context:** `Sources/Nimbus/FormToolView.swift`.
+
+### 2026-08-31 — Type-check timeout on a form view with many `.onChange` modifiers
+
+- **Problem:** `swift build` failed with "unable to type-check this expression in
+  reasonable time" on the Contract PDF form, a single view with 16 text fields.
+- **Cause:** the 16 `.onChange` modifiers chained onto one view body, not the
+  field count itself. Splitting the fields into sub-views without also splitting
+  the `.onChange` chain still timed out.
+- **Rule:** when a form grows past a handful of fields, group the fields *and*
+  their `.onChange` modifiers into per-section `Group`s, so no single expression
+  carries the whole validation chain.
+- **Context:** `Sources/Nimbus/FormFieldsSliceA.swift`, `contractPDFFields`.
+
+### 2026-08-31 — `ForEach(items.indices)` breaks row bindings on removal
+
+- **Problem:** the dynamic row list used by JSON Creator and Copy Generator was
+  first written as `ForEach(items.indices, id: \.self)` with `remove(at:)`.
+- **Cause:** index-based identity: removing a middle row shifts every later
+  index, so the surviving rows' `Binding`s point at the wrong elements (and an
+  in-flight index can go out of range).
+- **Rule:** dynamic lists take `Item: Identifiable`, iterate `ForEach($items)`
+  for direct bindings, and remove by `id` — never by index.
+- **Context:** `DynamicList` in `Sources/Nimbus/FormControls.swift`.
+
+### 2026-08-31 — A new source file must be registered in project.pbxproj by hand
+
+- **Problem:** files added for the form-input work built fine under SwiftPM but
+  would not have compiled in the Xcode target.
+- **Cause:** `Nimbus.xcodeproj` does not use synchronized groups, so a new
+  file needs its own `PBXBuildFile`, `PBXFileReference`, group membership, and
+  Sources build-phase entry.
+- **Rule:** adding a source file means editing `project.pbxproj` too; verify with
+  `plutil -lint Nimbus.xcodeproj/project.pbxproj`. Keeping the two build
+  entry points compatible is a standing constraint (see CLAUDE.md).
+- **Context:** `Nimbus.xcodeproj/project.pbxproj`.
+
+### 2026-09-01 — `Package.swift` never needed the new-file edit
+
+- **Problem:** the standing rule said a new Swift file must be registered in both
+  `Package.swift` and `project.pbxproj`. Half of it was busywork.
+- **Cause:** the rule was written from the Xcode symptom (a file that builds under
+  SwiftPM but not in the Xcode target) without checking the manifest. The target
+  is `.executableTarget(name: "Nimbus", path: "Sources/Nimbus", exclude: ["Info.plist"])`
+  — `path:` with no explicit `sources:`, so SwiftPM globs the directory.
+- **Rule:** only `project.pbxproj` needs the manual registration; leave
+  `Package.swift` alone unless the target ever gains an explicit `sources:` list.
+- **Context:** `Package.swift`, verified while reviewing the form-tool contract.
+
+### 2026-09-01 — `NSImage(data:)` decodes SVG, so an SVG result previews for free
+
+- **Problem:** QR Code was fixed to SVG output, and the generic result panel
+  previews a result only when it is an image — an SVG looked like it would fall
+  back to a generic document icon.
+- **Cause:** assumption. macOS actually decodes SVG: `NSImage(data:)` returns an
+  image backed by `_NSSVGImageRep`, and `UTType(mimeType: "image/svg+xml")`
+  resolves to `public.svg-image`, which conforms to `.image` and yields
+  `preferredFilenameExtension` `"svg"`.
+- **Rule:** an SVG body needs no special case in the result panel — the
+  `conforms(to: .image)` branch handles it, and the suggested filename gets its
+  extension from `UTType` on its own. Keep the preview's white backing, or a
+  black-on-transparent QR disappears.
+- **Context:** `FormResultView.interpretResult`, `Sidecar/tools/qrcode.mjs`.
+
+### 2026-09-01 — A ported error message is UI text; ported generated content is not
+
+- **Problem:** the Next routes answer in Portuguese and the Nimbus UI is English,
+  so ported error strings would surface Portuguese inside an English interface.
+  Applying that translation bluntly would also have rewritten Policy Generator's
+  privacy-policy and terms templates.
+- **Cause:** "port the route verbatim" and "the UI is in English" collide, and
+  the line between them is not the file — it is what the string *is*.
+- **Rule:** translate error messages to English; never translate the content a
+  tool exists to generate. Policy Generator's document stays PT-BR (a user
+  decision, 2026-09-01): translating it would stop being a port and become new
+  legal text needing review.
+- **Context:** `Sidecar/tools/policy-generator.mjs` and the other 12 ported routes.
+
+### 2026-09-01 — A slice's foundation must land before another slice's signature depends on it
+
+- **Problem:** the contract let both implementers write their form slices in
+  parallel. `FormFieldsSliceA`/`B` were gaining `@Binding var fields`/`files`,
+  and `FormToolView` (a third file, in the foundation slice) was gaining the call
+  that passes them — so whichever landed first left the tree uncompilable.
+- **Cause:** file ownership was clean, but a *signature* spans the caller and the
+  callee, which lived in different owners' files.
+- **Rule:** when a slice changes a type's signature, the foundation slice adds the
+  new members to every declaration up front (even empty), and dependent slices
+  start on work with no Swift dependency — here, the sidecar `.mjs` ports — until
+  the foundation is signalled as landed on the workboard.
+- **Context:** Slice 0 vs. Slice B of the form-tool feature.
+
+### 2026-09-01 — A view file existing is not the same as it being reachable
+
+- **Problem:** `PreferencesView.swift` held the Gemini/PageSpeed `SecureField`s
+  needed to test the 3 key-gated tools, but nothing in the app ever presented
+  it — no menu item, no window, no theme binding wired anywhere. `grep -rl
+  PreferencesView Sources/` turned up only the file itself.
+- **Cause:** the feature-spec for the Keychain/Preferences work specified the
+  view's body verbatim but never assigned a slice to wire it into
+  `NimbusApp.swift`/the status-item menu, and no reviewer noticed because
+  `swift build` succeeds fine on an unreferenced top-level `struct`.
+- **Rule:** when a contract adds or rewrites a `View` meant to be user-facing
+  (not a subview composed by an existing caller), the ownership table must
+  include the call site that presents it, and the Warden's live-verification
+  pass must include actually opening it, not just reading the diff.
+- **Context:** wired via `Settings` scene (`NimbusApp.swift`) + a "Preferences…"
+  item in the status-item `NSMenu`, using `@AppStorage` for `NimbusTheme`
+  persistence (its `RawRepresentable` conformance made this a 1-line
+  `@AppStorage` property instead of manual `UserDefaults` plumbing).

@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+
+# SwiftPM
+.build/
+.swiftpm/
+Packages/
+*.xcodeproj/xcuserdata/
+.netrc
+
+# Xcode
+xcuserdata/
+*.xcuserdatad/
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Node / Sidecar
+Sidecar/node_modules/
+Sidecar/npm-debug.log*
+
+# Secrets — never committed, always local
+.env
+.env.*
+*.pem
+*.p12
+
+# Maestri canvas — local team/session state, not project source
+.maestri/

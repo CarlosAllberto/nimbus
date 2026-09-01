@@ -1,0 +1,129 @@
+import SwiftUI
+
+struct MainWindowView: View {
+    @State private var query = ""
+    @State private var selectedToolID = ToolCatalog.tools[0].id
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+
+    private var filteredTools: [NimbusTool] {
+        guard !query.isEmpty else { return ToolCatalog.tools }
+        return ToolCatalog.tools.filter { tool in
+            tool.name.localizedCaseInsensitiveContains(query) ||
+            tool.summary.localizedCaseInsensitiveContains(query)
+        }
+    }
+
+    private var selectedTool: NimbusTool {
+        ToolCatalog.tools.first { $0.id == selectedToolID } ?? ToolCatalog.tools[0]
+    }
+
+    var body: some View {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            VStack(spacing: 0) {
+                SidebarSearchField(query: $query)
+                List(selection: $selectedToolID) {
+                    ForEach(ToolGroup.allCases) { group in
+                        let tools = filteredTools.filter { $0.group == group }
+                        if !tools.isEmpty {
+                            Section {
+                                ForEach(tools) { tool in
+                                    Label(tool.name, systemImage: tool.icon)
+                                        .tag(tool.id)
+                                        .accessibilityLabel(tool.name)
+                                }
+                            } header: {
+                                Text(group.title)
+                                    .font(.caption.weight(.semibold))
+                            }
+                        }
+                    }
+                }
+                .listStyle(.sidebar)
+            }
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+        } detail: {
+            ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
+                .id(selectedTool.id)
+        }
+    }
+}
+
+private struct SidebarSearchField: View {
+    @Binding var query: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+
+            TextField("Search tools", text: $query)
+                .textFieldStyle(.plain)
+                .accessibilityLabel("Search tools")
+
+            if !query.isEmpty {
+                Button {
+                    query = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 28)
+        .background(Color.secondary.opacity(0.16), in: Capsule())
+        .padding(.horizontal, 14)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+    }
+}
+
+private struct ToolDetailView: View {
+    let tool: NimbusTool
+    let isSidebarVisible: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if let configuration = FileToolConfiguration.configuration(for: tool.id) {
+                FileToolView(
+                    tool: tool,
+                    configuration: configuration,
+                    isSidebarVisible: isSidebarVisible
+                )
+            } else if let configuration = FormToolConfiguration.configuration(for: tool.id) {
+                FormToolView(tool: tool, configuration: configuration, isSidebarVisible: isSidebarVisible)
+            } else {
+                GenericToolView(tool: tool)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(.container, edges: .top)
+    }
+}
+
+private struct GenericToolView: View {
+    let tool: NimbusTool
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Image(systemName: tool.icon)
+                .font(.system(size: 42, weight: .medium))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+            Text(tool.name)
+                .font(.title.bold())
+            Text(tool.summary)
+                .foregroundStyle(.secondary)
+            Button("Open Tool") { }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+#Preview {
+    MainWindowView()
+}
