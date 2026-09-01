@@ -15,6 +15,18 @@ enum QuickDropShortcut {
     static let menuModifiers: NSEvent.ModifierFlags = [.option, .shift]
 }
 
+/// Spotlight shortcut, ⌘⇧Space. Deliberately avoids ⌘Space (the system
+/// Spotlight) — the user explicitly asked for a modifier shift so the two
+/// don't fight.
+enum SpotlightShortcut {
+    static let keyCode = UInt32(kVK_Space)
+    static let modifiers = UInt32(cmdKey | shiftKey)
+
+    /// The same combination expressed for an `NSMenuItem`.
+    static let menuKeyEquivalent = " "
+    static let menuModifiers: NSEvent.ModifierFlags = [.command, .shift]
+}
+
 /// Thin wrapper over Carbon's `RegisterEventHotKey`. Carbon is the right tool
 /// here because, unlike `NSEvent.addGlobalMonitorForEvents`, it does not
 /// require Accessibility permission — no privacy prompt for the user.

@@ -4,6 +4,8 @@ struct MainWindowView: View {
     @State private var query = ""
     @State private var selectedToolID = ToolCatalog.tools[0].id
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @FocusState private var isSearchFocused: Bool
+    @ObservedObject private var spotlightNavigator = SpotlightNavigator.shared
 
     private var filteredTools: [NimbusTool] {
         guard !query.isEmpty else { return ToolCatalog.tools }
@@ -20,36 +22,53 @@ struct MainWindowView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
-                SidebarSearchField(query: $query)
-                List(selection: $selectedToolID) {
-                    ForEach(ToolGroup.allCases) { group in
-                        let tools = filteredTools.filter { $0.group == group }
-                        if !tools.isEmpty {
-                            Section {
-                                ForEach(tools) { tool in
-                                    Label(tool.name, systemImage: tool.icon)
-                                        .tag(tool.id)
-                                        .accessibilityLabel(tool.name)
+                SidebarSearchField(query: $query, isFocused: $isSearchFocused)
+                ScrollViewReader { proxy in
+                    List(selection: $selectedToolID) {
+                        ForEach(ToolGroup.allCases) { group in
+                            let tools = filteredTools.filter { $0.group == group }
+                            if !tools.isEmpty {
+                                Section {
+                                    ForEach(tools) { tool in
+                                        Label(tool.name, systemImage: tool.icon)
+                                            .id(tool.id)
+                                            .tag(tool.id)
+                                            .accessibilityLabel(tool.name)
+                                    }
+                                } header: {
+                                    Text(group.title)
+                                        .font(.caption.weight(.semibold))
                                 }
-                            } header: {
-                                Text(group.title)
-                                    .font(.caption.weight(.semibold))
                             }
                         }
                     }
+                    .listStyle(.sidebar)
+                    .onChange(of: spotlightNavigator.pendingToolID) { _, newValue in
+                        guard let newValue else { return }
+                        selectedToolID = newValue
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            proxy.scrollTo(newValue, anchor: .center)
+                        }
+                        _ = spotlightNavigator.consumePendingToolID()
+                    }
                 }
-                .listStyle(.sidebar)
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
         }
+        .background {
+            Button("Search") { isSearchFocused = true }
+                .keyboardShortcut("f", modifiers: .command)
+                .hidden()
+        }
     }
 }
 
 private struct SidebarSearchField: View {
     @Binding var query: String
+    var isFocused: FocusState<Bool>.Binding
 
     var body: some View {
         HStack(spacing: 6) {
@@ -58,6 +77,7 @@ private struct SidebarSearchField: View {
 
             TextField("Search tools", text: $query)
                 .textFieldStyle(.plain)
+                .focused(isFocused)
                 .accessibilityLabel("Search tools")
 
             if !query.isEmpty {

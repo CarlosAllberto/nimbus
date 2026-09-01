@@ -27,6 +27,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var mainWindow: NSWindow?
     private let quickDropController = QuickDropPanelController()
     private var quickDropHotKey: GlobalHotKey?
+    private var spotlightController: SpotlightPanelController?
+    private var spotlightHotKey: GlobalHotKey?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -41,6 +43,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Shows the global shortcut in the menu, which is the only place it is
         // discoverable.
+        let spotlightItem = menu.addItem(
+            withTitle: "Search Tools",
+            action: #selector(toggleSpotlight),
+            keyEquivalent: SpotlightShortcut.menuKeyEquivalent
+        )
+        spotlightItem.keyEquivalentModifierMask = SpotlightShortcut.menuModifiers
         let quickDropItem = menu.addItem(
             withTitle: "Quick Drop",
             action: #selector(toggleQuickDrop),
@@ -65,10 +73,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] in
             self?.quickDropController.toggle()
         }
+
+        // Same silent-failure story as Quick Drop: the Search Tools menu item
+        // above is the alternate path if ⌘⇧Space is owned elsewhere.
+        let spotlightController = SpotlightPanelController(onToolSelected: { [weak self] toolID in
+            SpotlightNavigator.shared.select(toolID)
+            self?.showMainWindow()
+        })
+        self.spotlightController = spotlightController
+
+        spotlightHotKey = GlobalHotKey(
+            keyCode: SpotlightShortcut.keyCode,
+            modifiers: SpotlightShortcut.modifiers
+        ) { [weak self] in
+            self?.spotlightController?.toggle()
+        }
     }
 
     @objc private func toggleQuickDrop() {
         quickDropController.toggle()
+    }
+
+    @objc private func toggleSpotlight() {
+        spotlightController?.toggle()
     }
 
     /// `showSettingsWindow:` is the selector SwiftUI's `Settings` scene
@@ -82,8 +109,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Quick Drop activates the app to get a real key window (see
         // QuickDropPanel.swift). Without this guard, that activation would
         // raise the main window right on top of — or instead of — the panel
-        // the user just asked to see.
-        guard quickDropController.isVisible == false else { return }
+        // the user just asked to see. Same story for Spotlight: opening it
+        // alone must not yank the main window up in front of the panel.
+        guard quickDropController.isVisible == false, spotlightController?.isVisible != true else { return }
         guard let mainWindow, mainWindow.isVisible else { return }
         mainWindow.orderFrontRegardless()
         mainWindow.makeKey()
@@ -158,6 +186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // `GlobalHotKey` can't rely on `deinit` for this — see its doc
         // comment on `unregister()`.
         quickDropHotKey?.unregister()
+        spotlightHotKey?.unregister()
         SidecarProcess.shared.shutdown()
     }
 }
