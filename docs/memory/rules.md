@@ -121,3 +121,12 @@ it go stale.
   failing under the debugger — see [lessons.md](lessons.md), "Verify GUI
   behaviour by instrumenting and running" and "A fix verified in the wrong
   environment is not verified".
+
+- **Rule:** no em dashes in user-facing text. Where one would go, use a period,
+  a comma or parentheses — whichever the sentence actually needs. This covers
+  every string the user reads: UI labels, button titles, placeholders, tool
+  names and summaries, and error messages. Code comments and these docs are not
+  affected.
+  **Why:** the user asked for it after four of them reached the interface in one
+  session, written without a second thought. A written rule is what keeps new
+  text from bringing them back — the implementers read this file too.

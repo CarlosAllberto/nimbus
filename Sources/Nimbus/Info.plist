@@ -18,5 +18,7 @@
 	<true/>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>Nimbus uses screen recording access to power the Pick Color eyedropper, which previews colors live as you move the cursor.</string>
 </dict>
 </plist>

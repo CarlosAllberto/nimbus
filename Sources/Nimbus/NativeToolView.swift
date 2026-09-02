@@ -23,6 +23,8 @@ private struct PickColorView: View {
     let isSidebarVisible: Bool
 
     @State private var pickedColor: NSColor?
+    @State private var isAuthorized = EyedropperController.isAuthorized()
+    @State private var isPicking = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -44,13 +46,55 @@ private struct PickColorView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Button("Pick a Color") { pick() }
-                .buttonStyle(.borderedProminent)
+            actions
         }
         .frame(maxWidth: 460, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 20)
+        .onAppear {
+            // Covers "user granted access in System Settings and came
+            // back to Nimbus" — re-checks without requiring a click.
+            isAuthorized = EyedropperController.isAuthorized()
+        }
+        // `onAppear` alone misses the common case: the user never left this
+        // tool, they switched to System Settings and came back, so the view
+        // never re-appeared. Re-checking on activation catches that.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            isAuthorized = EyedropperController.isAuthorized()
+        }
+    }
+
+    @ViewBuilder
+    private var actions: some View {
+        if isAuthorized {
+            VStack(alignment: .leading, spacing: 10) {
+                Button(isPicking ? "Picking…" : "Pick a Color (Live)") { startLivePick() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isPicking)
+                Button("Use System Picker") { startSystemPick() }
+                    .buttonStyle(.link)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Grant Screen Recording access for a live eyedropper that previews color as you move the cursor.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                // macOS hands the permission to a process when it starts, so a
+                // grant made while Nimbus is running does not reach it. Saying
+                // so here saves the "I already allowed it" dead end.
+                Text("Already allowed it? Quit and reopen Nimbus. macOS only applies the permission when the app starts.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 12) {
+                    Button("Grant Access") { requestAccess() }
+                    Button("Open System Settings") { NSWorkspace.shared.open(EyedropperController.systemSettingsURL) }
+                        .buttonStyle(.link)
+                }
+                Button("Use System Picker") { startSystemPick() }
+                    .buttonStyle(.link)
+            }
+        }
     }
 
     /// Pick Color does NOT consume quota — it never goes through
@@ -59,11 +103,29 @@ private struct PickColorView: View {
     /// should consume quota, add a single call to
     /// UsageQuota.checkAndConsume() here — isolated, 3 lines,
     /// easy to add, not harder by not doing it now.
-    private func pick() {
+    private func startLivePick() {
+        isPicking = true
+        EyedropperController.shared.start(
+            onPick: { color in pickedColor = color; isPicking = false },
+            onCancel: { isPicking = false }
+        )
+    }
+
+    /// Fallback with no permission required at all — same body as the
+    /// previous round's single button, just renamed.
+    private func startSystemPick() {
         NSColorSampler().show { color in
             guard let color else { return }
             MainActor.assumeIsolated { pickedColor = color }
         }
+    }
+
+    private func requestAccess() {
+        _ = EyedropperController.requestAccess()
+        // Can stay false for the already-running process even after
+        // granting — see feature-spec 'Nota de ambiente'. Re-checked
+        // again in .onAppear if the user leaves and comes back.
+        isAuthorized = EyedropperController.isAuthorized()
     }
 
     private func rows(for color: NSColor) -> [(label: String, value: String)] {

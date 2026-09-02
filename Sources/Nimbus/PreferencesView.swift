@@ -106,7 +106,7 @@ private struct QuickDropPreferencesTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Only affects files dropped on the Quick Drop panel — the tool pages keep their own settings.")
+            Text("Only affects files dropped on the Quick Drop panel. The tool pages keep their own settings.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

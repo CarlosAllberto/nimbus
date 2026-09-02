@@ -185,9 +185,9 @@ enum UsageQuota {
     private static func blockedMessage(for snapshot: Snapshot) -> String {
         let planTitle = snapshot.subscriptionPlan.capitalized
         if let limit = snapshot.dailyLimit {
-            return "You've used all \(limit) of your \(planTitle) plan's daily tool runs. Upgrade for more, or try again tomorrow — usage resets at midnight UTC."
+            return "You've used all \(limit) of your \(planTitle) plan's daily tool runs. Upgrade for more, or try again tomorrow. Usage resets at midnight UTC."
         }
-        return "Daily usage limit reached. Upgrade for more, or try again tomorrow — usage resets at midnight UTC."
+        return "Daily usage limit reached. Upgrade for more, or try again tomorrow. Usage resets at midnight UTC."
     }
 }
 
