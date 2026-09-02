@@ -354,13 +354,17 @@ private struct QuickDropWell: View {
         }
         .buttonStyle(.plain)
         .aspectRatio(1, contentMode: .fit)
-        .background(isDropTargeted ? Color.accentColor.opacity(0.14) : Color.secondary.opacity(0.10))
+        // 0.08 and a 1pt dashed border while targeted, matching `FileDropZone`
+        // and `CompactFileField`: the panel used a stronger tint and turned its
+        // border solid, so the same gesture looked like a different control
+        // depending on where you dropped.
+        .background(isDropTargeted ? Color.accentColor.opacity(0.08) : Color.secondary.opacity(0.10))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(
                     isDropTargeted ? Color.accentColor : Color.secondary.opacity(0.5),
-                    style: StrokeStyle(lineWidth: isDropTargeted ? 1.5 : 1, dash: isDropTargeted ? [] : [6, 4])
+                    style: StrokeStyle(lineWidth: 1, dash: [6, 4])
                 )
         }
         .dropDestination(for: URL.self) { droppedURLs, _ in

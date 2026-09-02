@@ -35,8 +35,7 @@ struct AuthGateView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            Image(systemName: "cloud.fill")
-                .font(.system(size: 46, weight: .medium))
+            mark
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
             Text("Welcome to Nimbus")
@@ -44,6 +43,28 @@ struct AuthGateView: View {
             Text("Sign in to use your tools.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    /// The real Nimbus mark, from the same `.icns` the app icon uses so the
+    /// window and the Dock show one logo. The artwork is white on transparent,
+    /// which would vanish on a light window, so it is drawn as a template and
+    /// takes the tint colour instead of its own. Falls back to the SF Symbol
+    /// when the resource is missing — `swift build` makes a bare executable
+    /// with no bundle to load it from, and this is the first thing the app
+    /// shows.
+    @ViewBuilder
+    private var mark: some View {
+        if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let image = NSImage(contentsOf: url) {
+            Image(nsImage: image)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 52, height: 52)
+        } else {
+            Image(systemName: "cloud.fill")
+                .font(.system(size: 46, weight: .medium))
         }
     }
 
