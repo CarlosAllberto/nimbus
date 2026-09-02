@@ -93,3 +93,27 @@ it go stale.
   `GenericToolView` is a fallback that no catalogued tool should hit.
   **Why:** the three catalogs are decoupled on purpose, so a new tool needs an
   entry in each — see CLAUDE.md, Architecture.
+
+- **Rule:** a new `.swift` file under `Sources/Nimbus/` is not added until
+  `project.pbxproj` has both linked entries for it — a `PBXFileReference` and a
+  `PBXBuildFile` naming it as `fileRef` — plus the group and the Sources phase.
+  Prove it with `xcodebuild -project Nimbus.xcodeproj -scheme Nimbus
+  -configuration Debug -destination 'platform=macOS' build`, never with
+  `swift build` alone. (`Sidecar/` is exempt: it is a folder reference.)
+  **Why:** SwiftPM globs the folder and compiles the file immediately, so only
+  the Xcode target breaks, and `plutil -lint` validates plist syntax rather than
+  the build graph. This shipped a broken build to the user twice — see
+  [lessons.md](lessons.md), "A new Swift file needs both pbxproj entries".
+
+- **Rule:** a runtime or GUI claim needs a measurement, not a reading. Add
+  temporary logging to a file, run the real binary, drive it from the shell
+  (`open "nimbus://…"`, a debug URL hook, a probe behind an env var), and
+  compare before and after. Reproduce in the environment the report came from —
+  the user runs the `.app` from Xcode under a debugger — and prefer a fix that
+  holds an invariant over one that corrects after the fact, so ordering cannot
+  decide the outcome. A green build says nothing about behaviour.
+  **Why:** three fixes in a row were shipped on plausible reasoning and a green
+  build, each costing a user test cycle, and a fourth passed locally while still
+  failing under the debugger — see [lessons.md](lessons.md), "Verify GUI
+  behaviour by instrumenting and running" and "A fix verified in the wrong
+  environment is not verified".

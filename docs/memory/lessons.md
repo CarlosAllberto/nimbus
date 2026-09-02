@@ -306,3 +306,72 @@ rule, promote it to [rules.md](rules.md).
   `AuthSession` was untouched. Verified in the running app: bind, browser gets
   the completion page, code extracted, port released, and three immediate
   rebinds after `stop()`.
+
+### 2026-09-02 — A new Swift file needs both pbxproj entries, or only Xcode breaks
+
+- **Problem:** twice in one feature the user's build failed with `cannot find
+  type 'X' in scope` for a file that plainly existed and that `swift build`
+  compiled without complaint.
+- **Cause:** SwiftPM globs the source folder, so a new file is picked up the
+  moment it is written. The Xcode target reads `project.pbxproj`, where a file
+  needs *two* linked entries — a `PBXFileReference` and a `PBXBuildFile` naming
+  it as `fileRef` — plus membership in the group and the Sources phase. Once the
+  pair was half-written (a file reference and a Sources entry, no build file),
+  and once the file was never registered at all. `plutil -lint` passes either
+  way: it validates plist syntax, not the build graph.
+- **Rule:** adding a `.swift` file is not done until the pbxproj pair exists, and
+  the only proof is `xcodebuild -project Nimbus.xcodeproj -scheme Nimbus
+  -configuration Debug -destination 'platform=macOS' build`. Treat a green
+  `swift build` on a change that adds files as saying nothing about Xcode.
+- **Context:** `AuthSession.swift`, then `LoopbackAuthServer.swift`. Both
+  surfaced as a broken build in the user's hands rather than in ours.
+
+### 2026-09-02 — A fix verified in the wrong environment is not verified
+
+- **Problem:** the blurred titlebar was reported fixed, then came back. The fix
+  passed every check available locally — launching the built `.app` directly
+  showed a crisp title — and still failed for the user every time.
+- **Cause:** the fix re-applied the window chrome one run-loop tick after SwiftUI
+  reset it. Instrumented, the reset lands at ~0.2s and the correction at ~0.5s:
+  correct, but a race. The user runs from Xcode with a debugger attached, which
+  reorders the two, and the direct launch used for verification never could.
+- **Rule:** when a fix depends on ordering, reproduce in the environment the
+  report came from, or remove the ordering. Reasserting an invariant — here KVO
+  on `titlebarAppearsTransparent`, putting it back whoever clears it — is
+  order-independent and needs no timing assumption to hold.
+- **Context:** three rounds were spent on "works here" before the difference in
+  how the app was launched turned out to be the whole story.
+
+### 2026-09-02 — Two `.fileImporter`s in one hierarchy: the nested one never opens
+
+- **Problem:** clicking the background-image field in Device Wrapper did
+  nothing, while dropping a file onto the same field worked.
+- **Cause:** `FileToolView` already carries a `.fileImporter` for its main drop
+  zone, and `CompactFileField` brought a second one nested inside it. Drops need
+  no presentation, which is why only the click was dead. The same component had
+  always worked in forms, and `FormToolView` has no importer of its own — the
+  asymmetry was the tell.
+- **Rule:** treat `.fileImporter` (and sheet-style presentations generally) as
+  something a view hierarchy gets one of. A reusable field that opens a file
+  panel should drive `NSOpenPanel` itself rather than compete for the
+  presentation, which also frees it to work anywhere it is dropped in.
+- **Context:** `CompactFileField` now opens `NSOpenPanel` directly, activating
+  the app first the way `QuickDropWell` already did.
+
+### 2026-09-02 — Layout that works by accident breaks the moment it is copied
+
+- **Problem:** with the sidebar hidden, form tools drew their title underneath
+  the sidebar toggle button. File tools, with the identical 52pt leading inset
+  for the same case, were fine.
+- **Cause:** the inset was never what cleared the button. A `.frame(maxWidth:)`
+  narrower than the pane gets centred, and that offset is what carried the
+  header across. File tools cap at 460pt and gain enough offset; forms capped at
+  560pt and gained too little. Both were measured receiving
+  `isSidebarVisible == false` and applying the same 76pt — the constant was
+  innocent.
+- **Rule:** when two screens share a constant and only one looks right, the
+  constant is not doing the work. Find what actually positions the content
+  before adjusting the number, or the fix lands on the wrong mechanism.
+- **Context:** forms now use the same 460pt as file tools, which fixed the
+  overlap and the too-wide content in one change. The alignment still rests on
+  centring, so a resizable or narrow window would bring it back for both.
