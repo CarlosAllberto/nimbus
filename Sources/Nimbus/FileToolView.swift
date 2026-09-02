@@ -13,6 +13,8 @@ enum FileToolKind: String, CaseIterable {
     case resizeVideo = "resize-video"
     case paletteFromImage = "palette-from-image"
     case fontConvert = "font-convert"
+    case upscale
+    case toMp3 = "to-mp3"
 }
 
 struct FileToolConfiguration: Equatable {
@@ -69,6 +71,10 @@ struct FileToolConfiguration: Equatable {
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Resize Image")
         case .resizeVideo:
             return .init(kind: kind, acceptance: .video, allowsMultipleFiles: false, actionTitle: "Resize Video")
+        case .upscale:
+            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: true, actionTitle: "Upscale Images")
+        case .toMp3:
+            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: false, actionTitle: "Extract MP3")
         case .paletteFromImage:
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Extract Palette")
         case .fontConvert:
@@ -177,6 +183,7 @@ struct FileToolView: View {
     @State private var deviceOS = "macos"
     @State private var deviceBackground = "transparent"
     @State private var backgroundImageURL: URL?
+    @State private var mp3Bitrate = "192"
     @State private var resizeDimension: ResizeDimension = .width
     @State private var dimension = 640
     @State private var paletteColorCount = 5
@@ -386,6 +393,12 @@ struct FileToolView: View {
             ]
         case .resizeVideo:
             return ["width": String(dimension), "resizeBy": resizeDimension.rawValue]
+        case .upscale:
+            // Ported as-is from the site's route: 2x lanczos3, no options, so
+            // nothing to send beyond the file itself.
+            return [:]
+        case .toMp3:
+            return ["bitrate": mp3Bitrate]
         case .deviceWrapper:
             return ["os": deviceOS, "bg": deviceBackground == "transparent" ? "transparent" : "image"]
         }
@@ -414,7 +427,7 @@ struct FileToolView: View {
     /// `file`. The web app names them that way, so the sidecar does too.
     private var fileFieldName: String {
         switch configuration.kind {
-        case .webM, .resizeVideo: "video"
+        case .webM, .resizeVideo, .toMp3: "video"
         default: "file"
         }
     }
@@ -582,6 +595,14 @@ struct FileToolView: View {
                 ("image", "Built-in"),
                 ("custom", "Custom…")
             ], width: 110)
+
+        case .toMp3:
+            menuPicker("Quality", selection: $mp3Bitrate, options: [
+                ("128", "128 kbps"), ("192", "192 kbps"), ("320", "320 kbps")
+            ], width: 110)
+
+        case .upscale:
+            EmptyView()
 
         case .trimImage:
             EmptyView()

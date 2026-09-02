@@ -146,6 +146,8 @@ private struct ToolDetailView: View {
                 )
             } else if let configuration = FormToolConfiguration.configuration(for: tool.id) {
                 FormToolView(tool: tool, configuration: configuration, isSidebarVisible: isSidebarVisible)
+            } else if let kind = NativeToolKind(rawValue: tool.id) {
+                NativeToolView(kind: kind, tool: tool, isSidebarVisible: isSidebarVisible)
             } else {
                 GenericToolView(tool: tool)
             }

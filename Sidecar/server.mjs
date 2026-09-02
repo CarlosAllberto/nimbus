@@ -25,6 +25,8 @@ import { registerDeviceWrapper } from './tools/device-wrapper.mjs'
 import { registerFontConvert } from './tools/font-convert.mjs'
 import { registerToWebm } from './tools/to-webm.mjs'
 import { registerResizeVideo } from './tools/resize-video.mjs'
+import { registerUpscale } from './tools/upscale.mjs'
+import { registerToMp3 } from './tools/to-mp3.mjs'
 import { registerWhois } from './tools/whois.mjs'
 import { registerDnsCheck } from './tools/dns-check.mjs'
 import { registerWordpressInspector } from './tools/wordpress-inspector.mjs'
@@ -58,6 +60,8 @@ registerDeviceWrapper(registerRoute)
 registerFontConvert(registerRoute)
 registerToWebm(registerRoute)
 registerResizeVideo(registerRoute)
+registerUpscale(registerRoute)
+registerToMp3(registerRoute)
 registerWhois(registerRoute)
 registerDnsCheck(registerRoute)
 registerWordpressInspector(registerRoute)

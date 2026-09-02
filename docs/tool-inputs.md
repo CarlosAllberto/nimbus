@@ -93,6 +93,16 @@ a UI é escrita em inglês.
 - Dimensão: largura ou altura
 - Valor da dimensão
 
+### Upscale Image (`upscale`)
+
+- Arquivo: imagem
+- Fator fixo 2x, interpolação lanczos3 (sem opções)
+
+### MP4 to MP3 (`to-mp3`)
+
+- Arquivo: vídeo
+- Qualidade: `128`, `192` ou `320` kbps (padrão `192`)
+
 ## Code
 
 ### HTML Minify
@@ -175,3 +185,9 @@ a UI é escrita em inglês.
 
 - Arquivo de fonte: `.ttf`, `.otf`, `.woff`, `.woff2` ou `.eot`
 - Formato de saída: `ttf`, `otf`, `woff`, `woff2` ou `eot`
+
+### Pick Color (`pick-color`)
+
+- Sem entrada de arquivo/formulário — abre o conta-gotas nativo do macOS
+  (NSColorSampler) e mostra a cor escolhida em hex/RGB/HSL, cada um com
+  botão de copiar
