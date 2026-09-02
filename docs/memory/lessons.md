@@ -375,3 +375,44 @@ rule, promote it to [rules.md](rules.md).
 - **Context:** forms now use the same 460pt as file tools, which fixed the
   overlap and the too-wide content in one change. The alignment still rests on
   centring, so a resizable or narrow window would bring it back for both.
+
+### 2026-09-02 — The same Xcode error, two different causes
+
+- **Problem:** `cannot find 'LoopbackAuthServer' in scope` in Xcode, for a file
+  that existed and was committed. Earlier in the same session an identical
+  message meant the pbxproj was genuinely missing entries, so the reflex was to
+  go fix the pbxproj again.
+- **Cause:** this time the project on disk was complete — a clean `xcodebuild`
+  with DerivedData removed succeeded. `project.pbxproj` had been rewritten
+  several times while the user's Xcode had the project open, and Xcode kept
+  serving its stale in-memory model, which did not know the file.
+- **Rule:** the message does not name the cause. Build from the command line
+  with DerivedData cleared first: if that succeeds, the project is fine and the
+  answer is to quit Xcode fully (⌘Q, not just the window), reopen, and Clean
+  Build Folder — editing the pbxproj again would be fixing something that is not
+  broken. If it fails, the registration really is missing.
+- **Context:** worth checking every file at once rather than the one in the
+  message, because a pbxproj entry can also be present but left out of the group
+  or the Sources phase — the pair existing is not the same as the file being
+  built.
+
+### 2026-09-02 — A contract can omit the fact a decision needs
+
+- **Problem:** the usage gate could refund a unit the user never spent. The
+  quota check fails open — no session, no token, request failed — and lets the
+  run through without consuming anything. If the local run then failed, the
+  release fired anyway, decrementing a real count and handing out credit.
+- **Cause:** `GateResult` was `.allowed | .blocked`, so the call site could not
+  tell "allowed because it consumed" from "allowed because the check failed
+  open". Neither implementer could have caught it: each built exactly what the
+  contract described, and the missing piece was in the type the contract
+  defined, not in the code written against it. The Warden found it by reading
+  the fail-open paths against the release call sites.
+- **Rule:** when a contract defines a result type, check that it carries
+  everything its consumers must decide with — especially where one branch is a
+  fallback that did less work than it appears. `.allowed(consumed: Bool)` costs
+  nothing and makes the wrong call impossible to write.
+- **Context:** the sibling finding — whether releasing hurts a Pro account —
+  was answered by reading the function in the database: it floors at zero and
+  filters to free/basic, so it is a no-op there. Both were reported as findings
+  rather than assumptions, which is what made them cheap to settle.

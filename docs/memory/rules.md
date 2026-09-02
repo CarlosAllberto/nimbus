@@ -104,6 +104,10 @@ it go stale.
   the Xcode target breaks, and `plutil -lint` validates plist syntax rather than
   the build graph. This shipped a broken build to the user twice — see
   [lessons.md](lessons.md), "A new Swift file needs both pbxproj entries".
+  The same error also appears when the project is registered correctly and
+  Xcode is simply holding a stale model of a pbxproj rewritten under it, so run
+  that command before editing the project again: if it succeeds, the fix is to
+  quit Xcode and reopen — see "The same Xcode error, two different causes".
 
 - **Rule:** a runtime or GUI claim needs a measurement, not a reading. Add
   temporary logging to a file, run the real binary, drive it from the shell
