@@ -169,6 +169,7 @@ struct FileToolView: View {
     @State private var fileStatuses: [URL: FileRunStatus] = [:]
     @State private var completion: RunCompletion?
     @State private var processingErrorMessage: String?
+    @State private var quotaBlockedMessage: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var outputFormat = "webp"
     @State private var compressionPreset: CompressionPreset = .glossy
@@ -281,6 +282,18 @@ struct FileToolView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(processingErrorMessage ?? "Something went wrong.")
+        }
+        .alert(
+            "Daily Limit Reached",
+            isPresented: Binding(
+                get: { quotaBlockedMessage != nil },
+                set: { if !$0 { quotaBlockedMessage = nil } }
+            )
+        ) {
+            Button("Upgrade") { NSWorkspace.shared.open(UsageQuota.upgradeURL) }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(quotaBlockedMessage ?? "")
         }
     }
 
@@ -421,6 +434,12 @@ struct FileToolView: View {
         var written: [URL] = []
         var palette: [PaletteColor] = []
         var cancelled = false
+        // Tracks the unit taken for the file in flight, so a failure releases
+        // that one and only that one: files already finished keep theirs, and
+        // a fail-open check that consumed nothing releases nothing. Cleared
+        // once a file lands successfully. Declared out here because the
+        // `catch` that reads it sits outside the `do`.
+        var consumedCurrentFile = false
         withAnimation(motion) {
             completion = nil
             fileStatuses = [:]
@@ -435,10 +454,20 @@ struct FileToolView: View {
             let fields = requestFields ?? [:]
             let extras = try extraFiles()
 
-            for sourceURL in sources {
+            fileLoop: for sourceURL in sources {
                 // Checked between files, not mid-encode: a half-written output
                 // would be worse than finishing the one already in flight.
-                if Task.isCancelled { cancelled = true; break }
+                if Task.isCancelled { cancelled = true; break fileLoop }
+
+                switch await UsageQuota.checkAndConsume() {
+                case let .allowed(consumed):
+                    consumedCurrentFile = consumed
+                case let .blocked(message):
+                    quotaBlockedMessage = message
+                    cancelled = true
+                    break fileLoop
+                }
+
                 withAnimation(motion) { fileStatuses[sourceURL] = .processing }
 
                 let fileData = try Data(contentsOf: sourceURL)
@@ -462,10 +491,13 @@ struct FileToolView: View {
                     fileStatuses[sourceURL] = .done
                     processedCount += 1
                 }
+                consumedCurrentFile = false
             }
         } catch is CancellationError {
             cancelled = true
+            if consumedCurrentFile { UsageQuota.releaseOnFailure() }
         } catch {
+            if consumedCurrentFile { UsageQuota.releaseOnFailure() }
             // Whatever already landed on disk stays there; the message names
             // the file that stopped the batch, and its tile stays marked.
             let failedIndex = written.count

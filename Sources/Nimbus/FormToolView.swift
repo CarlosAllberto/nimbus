@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -12,6 +13,7 @@ struct FormToolView: View {
     @State private var isProcessing = false
     @State private var result: FormRunResult?
     @State private var runTask: Task<Void, Never>?
+    @State private var quotaBlockedMessage: String?
 
     private let focusRingInset: CGFloat = 4
 
@@ -118,6 +120,18 @@ struct FormToolView: View {
         .padding(.horizontal, 24 - focusRingInset)
         .padding(.top, 20)
         .padding(.bottom, 20)
+        .alert(
+            "Daily Limit Reached",
+            isPresented: Binding(
+                get: { quotaBlockedMessage != nil },
+                set: { if !$0 { quotaBlockedMessage = nil } }
+            )
+        ) {
+            Button("Upgrade") { NSWorkspace.shared.open(UsageQuota.upgradeURL) }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(quotaBlockedMessage ?? "")
+        }
     }
 
     @ViewBuilder
@@ -134,6 +148,16 @@ struct FormToolView: View {
     private func runTool() async {
         isProcessing = true
         defer { isProcessing = false }
+
+        let consumedUnit: Bool
+        switch await UsageQuota.checkAndConsume() {
+        case let .allowed(consumed):
+            consumedUnit = consumed
+        case let .blocked(message):
+            quotaBlockedMessage = message
+            return
+        }
+
         do {
             let endpoint = try await SidecarProcess.shared.ensureRunning()
             let apiClient = NimbusAPIClient(
@@ -150,7 +174,10 @@ struct FormToolView: View {
             }
             let (data, response) = try await apiClient.processForm(tool: tool, fields: fields, files: extraFiles)
             withAnimation(.snappy) { result = Self.interpretResult(data: data, response: response, toolID: tool.id) }
+        } catch is CancellationError {
+            if consumedUnit { UsageQuota.releaseOnFailure() }
         } catch {
+            if consumedUnit { UsageQuota.releaseOnFailure() }
             withAnimation(.snappy) { result = .error(error.localizedDescription) }
         }
     }

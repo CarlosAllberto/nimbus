@@ -35,7 +35,7 @@ struct NimbusApp: App {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var mainWindow: NSWindow?
     private let quickDropController = QuickDropPanelController()
@@ -60,6 +60,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastKeyWindowWasMain = true
     private var keyWindowObserver: NSObjectProtocol?
     private var authObserver: AnyCancellable?
+    private var usageObserver: AnyCancellable?
+    private var usageMenuItem: NSMenuItem?
+    private var usageSeparatorItem: NSMenuItem?
     private var titlebarObserver: NSKeyValueObservation?
 
     /// The real Nimbus mark, shared with the web app's own tray asset, marked
@@ -90,6 +93,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.image = Self.statusItemImage()
         statusItem.button?.toolTip = "Nimbus"
         let menu = NSMenu()
+        menu.delegate = self
+
+        // How much of today is left, in the one place reachable without opening
+        // the app at all. Disabled on purpose: it reports, it isn't an action.
+        let usageItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+        usageItem.isEnabled = false
+        usageItem.isHidden = true
+        menu.addItem(usageItem)
+        let usageSeparator = NSMenuItem.separator()
+        usageSeparator.isHidden = true
+        menu.addItem(usageSeparator)
+        usageMenuItem = usageItem
+        usageSeparatorItem = usageSeparator
+
         menu.addItem(withTitle: "Show Nimbus", action: #selector(showMainWindow), keyEquivalent: "")
 
         // Shows the global shortcut in the menu, which is the only place it is
@@ -144,6 +161,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         observeKeyWindowChanges()
         observeAuthChanges()
+        observeUsageChanges()
     }
 
     /// Signing in swaps the window's root content (the sign-in gate gives way
@@ -179,6 +197,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 observed.titlebarAppearsTransparent = true
             }
         }
+    }
+
+    /// Keeps the status-bar usage line in step with the counter the tools and
+    /// Preferences already update, so the menu never shows a number the app has
+    /// moved past.
+    private func observeUsageChanges() {
+        usageObserver = UsageIndicator.shared.objectWillChange.sink { [weak self] _ in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.refreshUsageMenuItem() }
+            }
+        }
+        refreshUsageMenuItem()
+    }
+
+    private func refreshUsageMenuItem() {
+        guard let usageMenuItem else { return }
+        // Hidden rather than blank while signed out or before the first
+        // snapshot lands: an empty row would just look like a broken menu.
+        guard let snapshot = UsageIndicator.shared.snapshot, isSignedIn else {
+            usageMenuItem.isHidden = true
+            usageSeparatorItem?.isHidden = true
+            return
+        }
+        usageMenuItem.title = snapshot.label
+        usageMenuItem.isHidden = false
+        usageSeparatorItem?.isHidden = false
     }
 
     /// Subscribes to every window in the app becoming key, no `object:`
@@ -406,11 +450,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func quit() { NSApp.terminate(nil) }
 
+    /// The count can be stale — the app may have sat idle for hours, or another
+    /// device may have spent from the same allowance — so opening the menu asks
+    /// the server for a fresh one. Read-only: it never consumes.
+    func menuWillOpen(_ menu: NSMenu) {
+        guard isSignedIn else { return }
+        Task { _ = await UsageQuota.fetchCurrent() }
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         // `GlobalHotKey` can't rely on `deinit` for this — see its doc
         // comment on `unregister()`.
         quickDropHotKey?.unregister()
         spotlightHotKey?.unregister()
+        usageObserver = nil
         if let keyWindowObserver {
             NotificationCenter.default.removeObserver(keyWindowObserver)
             self.keyWindowObserver = nil

@@ -179,6 +179,7 @@ private struct QuickDropPreferencesTab: View {
 
 private struct AccountPreferencesTab: View {
     @ObservedObject private var session = AuthSession.shared
+    @ObservedObject private var usage = UsageIndicator.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -193,6 +194,10 @@ private struct AccountPreferencesTab: View {
         }
         .padding(24)
         .frame(width: 420, alignment: .topLeading)
+        .task {
+            guard case .signedIn = session.state else { return }
+            _ = await UsageQuota.fetchCurrent()
+        }
     }
 
     private var restoringView: some View {
@@ -220,7 +225,14 @@ private struct AccountPreferencesTab: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            if let usageText {
+                Text(usageText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             Button("Sign Out", role: .destructive) { session.signOut() }
         }
     }
+
+    private var usageText: String? { usage.snapshot?.label }
 }
