@@ -62,13 +62,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var authObserver: AnyCancellable?
     private var titlebarObserver: NSKeyValueObservation?
 
+    /// The real Nimbus mark, shared with the web app's own tray asset, marked
+    /// as a template so macOS tints it for a light or dark menu bar instead of
+    /// drawing the artwork's own near-white. Falls back to the SF Symbol when
+    /// the resource isn't there — `swift build` produces a bare executable with
+    /// no bundle to load it from, and a missing icon must not cost the app its
+    /// only way in and out of the menu bar.
+    private static func statusItemImage() -> NSImage? {
+        guard
+            let url = Bundle.main.url(forResource: "TrayIcon", withExtension: "png"),
+            let image = NSImage(contentsOf: url)
+        else {
+            return NSImage(systemSymbolName: "cloud.fill", accessibilityDescription: "Nimbus")
+        }
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        image.accessibilityDescription = "Nimbus"
+        return image
+    }
+
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "cloud.fill", accessibilityDescription: "Nimbus")
+        statusItem.button?.image = Self.statusItemImage()
         statusItem.button?.toolTip = "Nimbus"
         let menu = NSMenu()
         menu.addItem(withTitle: "Show Nimbus", action: #selector(showMainWindow), keyEquivalent: "")
