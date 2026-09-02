@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 
 enum AuthState {
+    case restoring
     case signedOut
     case signingIn(SupabaseAuthProvider)
     case signedIn(SupabaseAuthUser)
@@ -13,12 +14,13 @@ final class AuthSession: ObservableObject {
     static let shared = AuthSession()
     private init() {}
 
-    @Published private(set) var state: AuthState = .signedOut
+    @Published private(set) var state: AuthState = .restoring
 
     private let accessTokenStore = KeychainTokenStore()
     private let refreshTokenStore = KeychainSecretStore(account: NimbusSecretAccount.supabaseRefreshToken)
 
     private static let signInTimeout: TimeInterval = 300
+    private static let restoreTimeout: TimeInterval = 10
 
     private var loopbackServer: LoopbackAuthServer?
 
@@ -81,6 +83,7 @@ final class AuthSession: ObservableObject {
     }
 
     func restoreSessionAtLaunch() {
+        startRestoreWatchdog()
         Task {
             guard let accessToken = (try? accessTokenStore.accessToken()) ?? nil else {
                 state = .signedOut
@@ -99,6 +102,22 @@ final class AuthSession: ObservableObject {
                 try store(session)
                 state = .signedIn(session.user)
             } catch {
+                state = .signedOut
+            }
+        }
+    }
+
+    /// `.restoring` must not be a dead end. The Keychain read below can block
+    /// for as long as the system's authorization prompt stays unanswered —
+    /// measured at 4s when accepted, and unbounded when it is left alone, which
+    /// happens after any rebuild changes the app's signature. Sign-in is now
+    /// required to use Nimbus, so a stuck restore would leave the whole app on
+    /// a spinner with no way forward; falling back to the sign-in buttons keeps
+    /// a path open. A late answer still resolves to `.signedIn` afterwards.
+    private func startRestoreWatchdog() {
+        Task {
+            try? await Task.sleep(nanoseconds: UInt64(Self.restoreTimeout * 1_000_000_000))
+            if case .restoring = state {
                 state = .signedOut
             }
         }

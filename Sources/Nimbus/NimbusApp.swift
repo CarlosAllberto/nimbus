@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 @main
@@ -58,6 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// itself from `AuthSession.shared` in its own time.
     private var lastKeyWindowWasMain = true
     private var keyWindowObserver: NSObjectProtocol?
+    private var authObserver: AnyCancellable?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -121,6 +123,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AuthSession.shared.restoreSessionAtLaunch()
 
         observeKeyWindowChanges()
+        observeAuthChanges()
+    }
+
+    /// Signing in swaps the window's root content (the sign-in gate gives way
+    /// to the tool catalog), and SwiftUI re-applies its own `.windowStyle` when
+    /// that happens — which resets `titlebarAppearsTransparent` and leaves the
+    /// titlebar material drawing over the tool title, blurring it. Re-applying
+    /// the chrome after the swap keeps the window looking the same on both
+    /// sides of sign-in. (Same root cause as the reopen path in `adopt`.)
+    private func observeAuthChanges() {
+        authObserver = AuthSession.shared.objectWillChange.sink { [weak self] _ in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self, let window = self.mainWindow else { return }
+                    self.applyChrome(to: window)
+                }
+            }
+        }
     }
 
     /// Subscribes to every window in the app becoming key, no `object:`
@@ -143,11 +163,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Quick Drop and Spotlight reach the tools without the main window, so
+    /// they have to respect the sign-in gate too — otherwise the shortcuts are
+    /// a way around it. Signed out, they raise the window (which is showing
+    /// `AuthGateView`) instead of opening their panel, so the user lands on the
+    /// one sign-in surface rather than a third copy of it.
+    private var isSignedIn: Bool {
+        if case .signedIn = AuthSession.shared.state { return true }
+        return false
+    }
+
     @objc private func toggleQuickDrop() {
+        guard isSignedIn else { showMainWindow(); return }
         quickDropController.toggle()
     }
 
     @objc private func toggleSpotlight() {
+        guard isSignedIn else { showMainWindow(); return }
         spotlightController?.toggle()
     }
 

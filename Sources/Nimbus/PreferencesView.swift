@@ -183,46 +183,30 @@ private struct AccountPreferencesTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             switch session.state {
-            case .signedOut:
-                signedOutView
-            case let .signingIn(provider):
-                signingInView(provider)
+            case .restoring:
+                restoringView
+            case .signedOut, .signingIn, .failed:
+                notSignedInView
             case let .signedIn(user):
                 signedInView(user)
-            case let .failed(message):
-                failedView(message)
             }
         }
         .padding(24)
         .frame(width: 420, alignment: .topLeading)
     }
 
-    private var signedOutView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Sign in to your Nimbus account.")
-                .font(.subheadline)
+    private var restoringView: some View {
+        HStack(spacing: 10) {
+            ProgressView().controlSize(.small)
+            Text("Loading your account…")
                 .foregroundStyle(.secondary)
-            ForEach(SupabaseAuthProvider.allCases) { provider in
-                Button {
-                    session.signIn(provider: provider)
-                } label: {
-                    Label("Continue with \(provider.displayName)", systemImage: provider.icon)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.bordered)
-            }
         }
     }
 
-    private func signingInView(_ provider: SupabaseAuthProvider) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                ProgressView().controlSize(.small)
-                Text("Waiting for \(provider.displayName) sign-in in your browser…")
-                    .foregroundStyle(.secondary)
-            }
-            Button("Cancel") { session.reset() }
-        }
+    private var notSignedInView: some View {
+        Text("You're not signed in. Sign in from the main Nimbus window.")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
     }
 
     private func signedInView(_ user: SupabaseAuthUser) -> some View {
@@ -237,15 +221,6 @@ private struct AccountPreferencesTab: View {
                 }
             }
             Button("Sign Out", role: .destructive) { session.signOut() }
-        }
-    }
-
-    private func failedView(_ message: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(message, systemImage: "exclamationmark.triangle.fill")
-                .font(.subheadline)
-                .foregroundStyle(.orange)
-            Button("Dismiss") { session.reset() }
         }
     }
 }

@@ -6,6 +6,7 @@ struct MainWindowView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @FocusState private var isSearchFocused: Bool
     @ObservedObject private var spotlightNavigator = SpotlightNavigator.shared
+    @ObservedObject private var auth = AuthSession.shared
     @Environment(\.openWindow) private var openWindow
 
     private var filteredTools: [NimbusTool] {
@@ -21,6 +22,19 @@ struct MainWindowView: View {
     }
 
     var body: some View {
+        // Nimbus requires an account: without a live session the whole window
+        // is the sign-in gate, not just a disabled action button. The catalog
+        // below is reached only in `.signedIn`.
+        Group {
+            if case .signedIn = auth.state {
+                catalog
+            } else {
+                AuthGateView()
+            }
+        }
+    }
+
+    private var catalog: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
                 SidebarSearchField(query: $query, isFocused: $isSearchFocused)
