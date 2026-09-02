@@ -36,6 +36,14 @@ enum FormToolKind: String, CaseIterable {
             .sliceB
         }
     }
+
+    /// The two minify tools share a shape no other form has: a single code
+    /// editor plus a minify/unminify choice. The choice belongs beside the
+    /// action button, where every file tool already keeps its options, and the
+    /// editor gets the height the pane can spare instead of a fixed 220pt box
+    /// inside a scroll view.
+    var isMinifyTool: Bool { self == .htmlMinify || self == .jsMinify }
+
 }
 
 struct FormToolConfiguration: Equatable {

@@ -72,6 +72,9 @@ struct FormTextEditor: View {
     var placeholder = ""
     var minHeight: CGFloat = 100
     var isMonospaced = false
+    /// Lets the editor take whatever height its container offers, for the forms
+    /// whose whole body is one editor.
+    var fillsHeight = false
 
     /// Built from the AppKit system font rather than a SwiftUI text style, so the
     /// editor and its placeholder match the text fields — those are NSTextFields
@@ -88,7 +91,7 @@ struct FormTextEditor: View {
         TextEditor(text: $text)
             .font(font)
             .scrollContentBackground(.hidden)
-            .frame(minHeight: minHeight)
+            .frame(minHeight: minHeight, maxHeight: fillsHeight ? .infinity : nil)
             // TextEditor has no prompt of its own, so the placeholder is drawn
             // behind it, inset by the text container's line-fragment padding.
             .overlay(alignment: .topLeading) {

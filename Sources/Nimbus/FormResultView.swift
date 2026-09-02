@@ -44,10 +44,20 @@ struct FormResultView: View {
 
     @ViewBuilder
     private func dataResult(json: Data, toolID: String) -> some View {
-        ScrollView {
+        // The minify results are a single code block that scrolls on its own,
+        // and it should have the height the panel can spare. Nesting it in an
+        // outer scroll view would both cap it at its ideal height and put one
+        // scroller inside another.
+        if FormToolKind(rawValue: toolID)?.isMinifyTool == true {
             composedResult(json: json, toolID: toolID)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(.vertical, 4)
+        } else {
+            ScrollView {
+                composedResult(json: json, toolID: toolID)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 4)
+            }
         }
     }
 

@@ -23,11 +23,11 @@ struct FormResultSliceB: View {
             }
         case .htmlMinify:
             decoded(HtmlMinifyResult.self) { result in
-                CodeBlockView(code: result.result, suggestedFilename: "result.html", contentType: .html)
+                CodeBlockView(code: result.result, suggestedFilename: "result.html", contentType: .html, maxHeight: .infinity)
             }
         case .jsMinify:
             decoded(JsMinifyResult.self) { result in
-                CodeBlockView(code: result.result, suggestedFilename: "result.js", contentType: UTType(filenameExtension: "js") ?? .plainText)
+                CodeBlockView(code: result.result, suggestedFilename: "result.js", contentType: UTType(filenameExtension: "js") ?? .plainText, maxHeight: .infinity)
             }
         case .passwordGenerator:
             decoded(PasswordGeneratorResult.self) { result in

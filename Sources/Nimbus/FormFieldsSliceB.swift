@@ -39,11 +39,9 @@ struct FormFieldsSliceB: View {
 
     // HTML Minify
     @State private var htmlCode = ""
-    @State private var htmlAction = "minify"
 
     // JS Minify
     @State private var jsCode = ""
-    @State private var jsAction = "minify"
 
     // JSON Creator
     @State private var jsonStructure = "object"
@@ -198,23 +196,19 @@ struct FormFieldsSliceB: View {
     private var htmlMinifyFields: some View {
         VStack(alignment: .leading, spacing: 14) {
             FormRow(label: "Code") {
+                // The minify/unminify picker for this tool lives beside the
+                // action button in `FormToolView`, not here.
                 codeEditor($htmlCode, label: "HTML code", placeholder: "Paste your HTML here")
             }
-            FormRow(label: "Action") {
-                menuPicker("Action", selection: $htmlAction, options: [
-                    ("minify", "Minify"), ("unminify", "Unminify")
-                ], width: 110)
-            }
         }
+        .frame(maxHeight: .infinity)
         .task { updateHtmlMinifyCanSubmit() }
         .onChange(of: htmlCode) { _, _ in updateHtmlMinifyCanSubmit() }
-        .onChange(of: htmlAction) { _, _ in updateHtmlMinifyCanSubmit() }
     }
 
     private func updateHtmlMinifyCanSubmit() {
         canSubmit = !htmlCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         fields["html"] = htmlCode
-        fields["action"] = htmlAction
     }
 
     // MARK: - JS Minify
@@ -222,23 +216,19 @@ struct FormFieldsSliceB: View {
     private var jsMinifyFields: some View {
         VStack(alignment: .leading, spacing: 14) {
             FormRow(label: "Code") {
+                // The minify/unminify picker for this tool lives beside the
+                // action button in `FormToolView`, not here.
                 codeEditor($jsCode, label: "JavaScript code", placeholder: "Paste your JavaScript here")
             }
-            FormRow(label: "Action") {
-                menuPicker("Action", selection: $jsAction, options: [
-                    ("minify", "Minify"), ("unminify", "Unminify")
-                ], width: 110)
-            }
         }
+        .frame(maxHeight: .infinity)
         .task { updateJsMinifyCanSubmit() }
         .onChange(of: jsCode) { _, _ in updateJsMinifyCanSubmit() }
-        .onChange(of: jsAction) { _, _ in updateJsMinifyCanSubmit() }
     }
 
     private func updateJsMinifyCanSubmit() {
         canSubmit = !jsCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         fields["js"] = jsCode
-        fields["action"] = jsAction
     }
 
     // MARK: - JSON Creator
@@ -447,7 +437,8 @@ struct FormFieldsSliceB: View {
             label: label,
             placeholder: placeholder,
             minHeight: 220,
-            isMonospaced: true
+            isMonospaced: true,
+            fillsHeight: true
         )
     }
 

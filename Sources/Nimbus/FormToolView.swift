@@ -15,6 +15,11 @@ struct FormToolView: View {
 
     private let focusRingInset: CGFloat = 4
 
+    /// Owned here rather than in the fields slice because the picker it drives
+    /// is rendered beside the action button, the way file tools carry their
+    /// options.
+    @State private var minifyAction = "minify"
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 4) {
@@ -27,12 +32,25 @@ struct FormToolView: View {
             .padding(.horizontal, focusRingInset)
 
             ZStack {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        fieldsForSlice
+                // A form whose whole body is one code editor has nothing to
+                // scroll — wrapping it would cap the editor at its ideal height
+                // and leave the rest of the pane empty.
+                Group {
+                    if configuration.kind.isMinifyTool {
+                        VStack(alignment: .leading, spacing: 20) {
+                            fieldsForSlice
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        .padding(focusRingInset)
+                    } else {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 20) {
+                                fieldsForSlice
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(focusRingInset)
+                        }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(focusRingInset)
                 }
                 .opacity(result == nil ? 1 : 0)
                 .allowsHitTesting(result == nil)
@@ -65,6 +83,17 @@ struct FormToolView: View {
                     if isProcessing {
                         ProgressView().controlSize(.small)
                     }
+                    if configuration.kind.isMinifyTool {
+                        Picker("Action", selection: $minifyAction) {
+                            Text("Minify").tag("minify")
+                            Text("Unminify").tag("unminify")
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .frame(width: 110)
+                        .help("Action")
+                        .disabled(isProcessing)
+                    }
                     Button(configuration.actionTitle) {
                         runTask = Task { await runTool() }
                     }
@@ -82,6 +111,10 @@ struct FormToolView: View {
         // further left and the title ran under the button — the file tools were
         // only ever fine because of the width they happen to use.
         .frame(maxWidth: result == nil ? 460 : .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .task(id: minifyAction) {
+            guard configuration.kind.isMinifyTool else { return }
+            fields["action"] = minifyAction
+        }
         .padding(.horizontal, 24 - focusRingInset)
         .padding(.top, 20)
         .padding(.bottom, 20)
