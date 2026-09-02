@@ -142,6 +142,7 @@ final class KeychainSecretStore: @unchecked Sendable {
 enum NimbusSecretAccount {
     static let geminiAPIKey = "gemini-api-key"
     static let pageSpeedAPIKey = "google-pagespeed-api-key"
+    static let supabaseRefreshToken = "supabase-refresh-token"
 }
 
 final class KeychainTokenStore: NimbusTokenProvider, @unchecked Sendable {
@@ -159,6 +160,8 @@ final class KeychainTokenStore: NimbusTokenProvider, @unchecked Sendable {
     }
 
     func save(accessToken: String) throws { try store.write(accessToken) }
+
+    func delete() throws { try store.delete() }
 }
 
 /// An extra multipart part beyond the primary `file` — Device Wrapper's

@@ -6,6 +6,7 @@ struct MainWindowView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @FocusState private var isSearchFocused: Bool
     @ObservedObject private var spotlightNavigator = SpotlightNavigator.shared
+    @Environment(\.openWindow) private var openWindow
 
     private var filteredTools: [NimbusTool] {
         guard !query.isEmpty else { return ToolCatalog.tools }
@@ -62,6 +63,23 @@ struct MainWindowView: View {
             Button("Search") { isSearchFocused = true }
                 .keyboardShortcut("f", modifiers: .command)
                 .hidden()
+        }
+        // Capture the `openWindow` action so `AppDelegate.showMainWindow()`
+        // can reopen the main window via the documented SwiftUI path
+        // (`Window(id:)` is a singleton -- once closed, the only way back in
+        // is `openWindow(id:)`). Registered fresh each time the View comes
+        // back, cleared on disappear so a stale capture can never fire while
+        // the window is gone.
+        .onAppear {
+            MainWindowOpener.shared.registerOpenAction { [openWindow] in
+                openWindow(id: "main")
+            }
+        }
+        .onDisappear {
+            // Drop the capture so the action can never fire against a
+            // closed-and-not-rebuilt window. `onAppear` will re-register
+            // when SwiftUI rebuilds the View on reopen.
+            MainWindowOpener.shared.registerOpenAction { }
         }
     }
 }

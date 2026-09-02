@@ -226,3 +226,83 @@ rule, promote it to [rules.md](rules.md).
   item in the status-item `NSMenu`, using `@AppStorage` for `NimbusTheme`
   persistence (its `RawRepresentable` conformance made this a 1-line
   `@AppStorage` property instead of manual `UserDefaults` plumbing).
+
+### 2026-09-02 — A bare SwiftPM executable cannot handle a custom URL scheme
+
+- **Problem:** Google OAuth appeared to "open a second Nimbus" and leave the
+  browser spinning forever. Three rounds of window-management fixes in
+  `AppDelegate` (focus guards, `WindowGroup` → `Window(id:)`, an `openWindow`
+  bridge) changed nothing, because none of them addressed the real cause.
+- **Cause:** Xcode was running the `Package.swift` target, which produces a bare
+  Mach-O executable with no `.app` bundle and therefore no Info.plist that
+  LaunchServices can register for `nimbus:`. When the browser handed back
+  `nimbus://auth-callback?code=…`, macOS resolved the scheme to the *other*
+  build — the `.app` from `Nimbus.xcodeproj` — and launched it as a **second
+  process**. That process showed its own main window ("the other Nimbus") and
+  discarded the code, because `pendingCodeVerifier` lives in the memory of the
+  process that started the sign-in. Both symptoms, one cause.
+- **Rule:** anything that depends on bundle identity — URL schemes, Launch
+  Services, Info.plist keys, notifications — only works in the `.xcodeproj`
+  build. `swift build`/the SwiftPM scheme is for compiling, not for running
+  those features. When a bundle-dependent feature "doesn't work", check *which
+  binary is actually running* (`ps -eo comm= | grep Nimbus`) before touching code.
+- **Context:** the original feature-spec did note that `swift build` produces no
+  `.app`; the note existed but nobody checked it against the running process.
+  Diagnosed by logging process paths during a real reproduction, after three
+  code-level hypotheses had failed.
+
+### 2026-09-02 — SwiftUI opens a duplicate window on external open events
+
+- **Problem:** delivering `nimbus://auth-callback` to the correctly-bundled
+  `.app` still produced a second main window, on top of the existing one.
+- **Cause:** the scene answers the system "open URL" event by building another
+  instance of itself, *before* `application(_:open:)` runs. Instrumented log:
+  `MainWindowView.onAppear` fired a second time and `NSApp.windows` went 2 → 3
+  (a new `TUINSWindow`). Switching `WindowGroup` → `Window(id:)` does not stop
+  this — a `Window` still responds to external events.
+- **Rule:** when an `AppDelegate` fully handles URL/user-activity events, mark
+  the scene `.handlesExternalEvents(matching: [])` so SwiftUI does not open a
+  window of its own for the same event. No focus guard in `AppDelegate` can fix
+  this, because the extra window is created outside your code.
+- **Context:** also found on the reopen path that SwiftUI re-applies its
+  `.windowStyle` *after* the AppKit chrome is set, resetting
+  `titlebarAppearsTransparent`; the chrome is now re-applied one run-loop tick
+  later (`applyChrome(to:)`).
+
+### 2026-09-02 — Verify GUI behaviour by instrumenting and running, not by reading
+
+- **Problem:** three consecutive fixes were shipped on plausible-sounding
+  hypotheses, each verified only by `swift build` + `xcodebuild` succeeding.
+  All three left the bug untouched, and each round cost a full user test cycle.
+- **Cause:** no agent in this setup can click a GUI, so "verification" silently
+  degraded to "it compiles" — which cannot distinguish a correct fix from an
+  irrelevant one.
+- **Rule:** for a runtime/GUI bug, add temporary logging to a file, run the real
+  binary, drive it from the shell (`open "nimbus://…"`, and temporary debug URL
+  hooks for actions that need a click), and diff the measurements before and
+  after. Only then hand it to the user. A green build is not evidence about
+  runtime behaviour.
+- **Context:** the instrumented run identified both root causes in a single pass
+  after three blind rounds.
+
+### 2026-09-02 — NWListener fails with EINVAL here; an error message that guesses hides it
+
+- **Problem:** the loopback OAuth server reported "port already in use" while the
+  port was demonstrably free (`lsof` twice, plus a plain POSIX `bind` on the very
+  same port succeeding).
+- **Cause:** two compounding faults. `NWListener` fails to start with `EINVAL`
+  for *every* port in this app on this macOS — measured in-app: auto-assigned,
+  8123 and 53682 all failed, while a POSIX socket bound fine in the same
+  process. And `start()` mapped every listener failure to `.portUnavailable`,
+  whose message asserted a port conflict, so the one diagnostic the user could
+  see pointed away from the real cause.
+- **Rule:** an error case may only claim what it actually knows. Carry the real
+  reason (`strerror(errno)`, the underlying error) instead of naming the most
+  likely cause, or the message becomes a false lead — this one cost a full
+  debugging round. For a loopback listener, a POSIX socket plus `DispatchSource`
+  is the dependable transport here; keep `NWListener` out of this path.
+- **Context:** `LoopbackAuthServer` now binds a POSIX socket, and its error is
+  `.listenerFailed(String)` carrying `strerror`. Same public API, so
+  `AuthSession` was untouched. Verified in the running app: bind, browser gets
+  the completion page, code extracted, port released, and three immediate
+  rebinds after `stop()`.
