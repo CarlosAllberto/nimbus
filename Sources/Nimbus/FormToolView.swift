@@ -76,7 +76,12 @@ struct FormToolView: View {
             .padding(.horizontal, focusRingInset)
             .animation(.snappy, value: isProcessing)
         }
-        .frame(maxWidth: result == nil ? 560 : .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // 460 to match `FileToolView`: a narrower block than the pane gets
+        // centred, and that offset is what carries the header clear of the
+        // sidebar toggle when the sidebar is hidden. At 560 the block sat
+        // further left and the title ran under the button — the file tools were
+        // only ever fine because of the width they happen to use.
+        .frame(maxWidth: result == nil ? 460 : .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 24 - focusRingInset)
         .padding(.top, 20)
         .padding(.bottom, 20)

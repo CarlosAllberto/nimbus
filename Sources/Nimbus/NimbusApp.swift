@@ -60,6 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastKeyWindowWasMain = true
     private var keyWindowObserver: NSObjectProtocol?
     private var authObserver: AnyCancellable?
+    private var titlebarObserver: NSKeyValueObservation?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -139,6 +140,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     guard let self, let window = self.mainWindow else { return }
                     self.applyChrome(to: window)
                 }
+            }
+        }
+    }
+
+    /// SwiftUI re-applies its own `.windowStyle` whenever it rebuilds the
+    /// window's root content — signing in, most visibly — and that sets
+    /// `titlebarAppearsTransparent` back to false, leaving the titlebar
+    /// material blurring the tool title underneath. Re-applying the chrome one
+    /// run-loop tick later fixed the common case but is a race: measured at
+    /// launch, the reset lands at ~0.2s and the correction at ~0.5s, and
+    /// anything that reorders those (a debugger attached, a slower machine)
+    /// brings the blur back. Watching the property instead is order-independent
+    /// — whoever sets it false, it goes straight back.
+    private func observeTitlebarStyle(of window: NSWindow) {
+        titlebarObserver = window.observe(\.titlebarAppearsTransparent, options: [.new]) { observed, change in
+            guard change.newValue == false else { return }
+            MainActor.assumeIsolated {
+                observed.titlebarAppearsTransparent = true
             }
         }
     }
@@ -301,6 +320,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindow = window
         window.isReleasedWhenClosed = false
         observeClose(of: window)
+        observeTitlebarStyle(of: window)
 
         // The app lives in the menu bar, but while its window is up it behaves like
         // a normal app: Dock tile, ⌘Tab entry, recents. `windowWillClose` puts it

@@ -112,7 +112,6 @@ struct CompactFileField: View {
     let acceptance: FileAcceptance
     @Binding var url: URL?
 
-    @State private var isSelecting = false
     @State private var isDropTargeted = false
 
     private let thumbnailSize: CGFloat = 40
@@ -143,9 +142,26 @@ struct CompactFileField: View {
             acceptDrop(droppedURLs)
         } isTargeted: { isDropTargeted = $0 }
         .animation(.snappy, value: isDropTargeted)
-        .fileImporter(isPresented: $isSelecting, allowedContentTypes: acceptance.allowedContentTypes) { result in
-            if case let .success(chosenURL) = result { url = chosenURL }
-        }
+    }
+
+    /// `NSOpenPanel` directly rather than SwiftUI's `.fileImporter`: this field
+    /// is used inside `FileToolView`, which already carries a `.fileImporter`
+    /// for its main drop zone, and a second one nested in the same hierarchy
+    /// never presented — clicking the field did nothing while drops still
+    /// worked. Forms have no competing importer, which is why the same
+    /// component behaved there. Driving the panel directly sidesteps the
+    /// conflict wherever the field is used.
+    private func chooseFile() {
+        // The panel is unusable while the app is in the background — the same
+        // reason `QuickDropWell` activates before opening one.
+        NSApp.activate()
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = acceptance.allowedContentTypes
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        guard panel.runModal() == .OK, let chosen = panel.url else { return }
+        url = chosen
     }
 
     private func filledContent(for url: URL) -> some View {
@@ -160,7 +176,7 @@ struct CompactFileField: View {
 
             Spacer(minLength: 0)
 
-            Button("Replace…") { isSelecting = true }
+            Button("Replace…") { chooseFile() }
                 .buttonStyle(.link)
             Button("Clear") { self.url = nil }
                 .buttonStyle(.link)
@@ -171,7 +187,7 @@ struct CompactFileField: View {
 
     private var emptyContent: some View {
         Button {
-            isSelecting = true
+            chooseFile()
         } label: {
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)

@@ -200,6 +200,10 @@ struct FileToolView: View {
             }
             .padding(.leading, isSidebarVisible ? 0 : 52)
 
+            // The background picker is a second file input, so it belongs with
+            // the drop zone rather than with the option pickers below — the
+            // body's 18pt rhythm separates groups, and these two are one group.
+            VStack(alignment: .leading, spacing: 8) {
             ZStack {
                 FileDropZone(
                     urls: $selectedFiles,
@@ -229,6 +233,14 @@ struct FileToolView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 170, maxHeight: .infinity)
             .layoutPriority(1)
+
+                if configuration.kind == .deviceWrapper, deviceBackground == "custom" {
+                    CompactFileField(label: "Background Image", acceptance: .image, url: $backgroundImageURL)
+                        .transition(backgroundFieldTransition)
+                }
+            }
+            .layoutPriority(1)
+            .animation(motion, value: deviceBackground)
 
             actionBar
         }
@@ -313,6 +325,18 @@ struct FileToolView: View {
         .frame(maxWidth: .infinity)
         .animation(motion, value: isProcessing)
         .animation(motion, value: processedCount)
+    }
+
+    /// The field's frame appears at once — that is what makes the drop zone
+    /// above shrink — but fading it in only once that movement has settled
+    /// keeps it from showing up on top of a layout still moving. Removal is not
+    /// delayed: fading out as the gap closes reads as one motion, while a
+    /// delayed exit would leave the field hanging over the collapse.
+    private var backgroundFieldTransition: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.animation(reduceMotion ? motion : motion.delay(0.18)),
+            removal: .opacity.animation(motion)
+        )
     }
 
     /// Honours Reduce Motion everywhere in this view, the way the Quick Drop
@@ -526,9 +550,6 @@ struct FileToolView: View {
                 ("image", "Built-in"),
                 ("custom", "Custom…")
             ], width: 110)
-            if deviceBackground == "custom" {
-                CompactFileField(label: "Background Image", acceptance: .image, url: $backgroundImageURL)
-            }
 
         case .trimImage:
             EmptyView()
