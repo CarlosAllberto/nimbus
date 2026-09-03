@@ -1,5 +1,5 @@
 import AppKit
-import QuickLookThumbnailing
+@preconcurrency import QuickLookThumbnailing
 import SwiftUI
 
 /// Renders a QuickLook-generated thumbnail for a file URL, falling back to a system

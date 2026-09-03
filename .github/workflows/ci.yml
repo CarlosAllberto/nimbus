@@ -18,6 +18,13 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Select newest available Xcode
+        # macos-14's default xcode-select resolves to a Swift 5.10 toolchain,
+        # while Package.swift declares swift-tools-version 6.0 (Xcode 16+).
+        # Pick the highest-versioned Xcode already on the runner image
+        # instead of pinning one, so a future image bump can't reintroduce
+        # this by dropping the exact version this pointed to.
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
       - name: Lint
         run: make lint
       - name: Build
