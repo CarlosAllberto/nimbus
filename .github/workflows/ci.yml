@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, feat/launch-at-login] # TEMP: testing branch, remove before merge
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -36,7 +36,7 @@ jobs:
     # `validate` never reach this job since it isn't in their `needs` chain
     # trigger at all (see the `if`).
     needs: validate
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/launch-at-login') # TEMP: testing branch, remove before merge
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: macos-14
     permissions:
       contents: read
