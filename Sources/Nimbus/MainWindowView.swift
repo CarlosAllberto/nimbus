@@ -70,17 +70,16 @@ struct MainWindowView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+            // Has to sit on the sidebar's own content, not on the
+            // NavigationSplitView as a whole — applied up on the split view
+            // itself it silently no-ops (the automatic toggle and our own
+            // hand-rolled replacement both rendered, sandwiching the update
+            // icon between them instead of removing the automatic one).
+            .toolbar(removing: .sidebarToggle)
         } detail: {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
         }
-        // The automatic sidebar toggle NavigationSplitView adds always lands
-        // first in the `.navigation` group, so a second item declared there
-        // ends up to its right, outside the sidebar, over the detail title —
-        // not what "next to the sidebar toggle, inside the sidebar" means.
-        // Removing it and adding both items ourselves, download first, is
-        // what actually puts the icon to the toggle's left.
-        .toolbar(removing: .sidebarToggle)
         .toolbar {
             if let info = updateIndicator.available {
                 ToolbarItem(placement: .navigation) {
