@@ -29,6 +29,11 @@ struct PreferencesView: View {
 private struct GeneralPreferencesTab: View {
     @Binding var theme: NimbusTheme
     @ObservedObject private var updateIndicator = UpdateIndicator.shared
+    // Mirrors `SMAppService.mainApp.status` in local state so the Toggle has
+    // something to bind to; re-read on appear since the user can also flip
+    // this from System Settings > General > Login Items directly.
+    @State private var launchAtLogin = LaunchAtLogin.isEnabled
+    @State private var loginItemStatus = LaunchAtLogin.status
 
     private var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
@@ -45,6 +50,27 @@ private struct GeneralPreferencesTab: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(width: 160, alignment: .leading)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Toggle("Launch Nimbus at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        LaunchAtLogin.setEnabled(newValue)
+                        loginItemStatus = LaunchAtLogin.status
+                    }
+                if loginItemStatus == .requiresApproval {
+                    HStack(spacing: 6) {
+                        Text("macOS needs you to approve this in Login Items.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button("Open Settings") { NSWorkspace.shared.open(LaunchAtLogin.loginItemsSettingsURL) }
+                            .buttonStyle(.link)
+                    }
+                }
+            }
+            .onAppear {
+                launchAtLogin = LaunchAtLogin.isEnabled
+                loginItemStatus = LaunchAtLogin.status
             }
 
             VStack(alignment: .leading, spacing: 6) {
