@@ -97,15 +97,9 @@ private struct SpotlightResultRow: View {
             Image(systemName: tool.icon)
                 .frame(width: 22)
                 .foregroundStyle(isHighlighted ? .white : .secondary)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(tool.name)
-                    .font(.body)
-                    .foregroundStyle(isHighlighted ? .white : .primary)
-                Text(tool.summary)
-                    .font(.caption)
-                    .foregroundStyle(isHighlighted ? .white.opacity(0.85) : .secondary)
-                    .lineLimit(1)
-            }
+            Text(tool.name)
+                .font(.body)
+                .foregroundStyle(isHighlighted ? .white : .primary)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10)
