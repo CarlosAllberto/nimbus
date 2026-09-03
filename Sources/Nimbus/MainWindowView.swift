@@ -7,6 +7,7 @@ struct MainWindowView: View {
     @FocusState private var isSearchFocused: Bool
     @ObservedObject private var spotlightNavigator = SpotlightNavigator.shared
     @ObservedObject private var auth = AuthSession.shared
+    @ObservedObject private var updateIndicator = UpdateIndicator.shared
     @Environment(\.openWindow) private var openWindow
 
     private var filteredTools: [NimbusTool] {
@@ -72,6 +73,23 @@ struct MainWindowView: View {
         } detail: {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
+        }
+        // `.navigation` places this beside the sidebar toggle `NavigationSplitView`
+        // already puts in the toolbar — this doesn't replace or remove any of
+        // the other places an update surfaces (status-bar menu, Preferences),
+        // just adds a fourth, higher-visibility one.
+        .toolbar {
+            if let info = updateIndicator.available {
+                ToolbarItem(placement: .navigation) {
+                    Button {
+                        NSWorkspace.shared.open(UpdateChecker.releasePageURL)
+                    } label: {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundStyle(.blue)
+                    }
+                    .help("Update available (build \(info.build)) — click to download")
+                }
+            }
         }
         .background {
             Button("Search") { isSearchFocused = true }
