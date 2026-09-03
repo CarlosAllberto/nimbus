@@ -44,6 +44,7 @@
 		A100000000000000000000F8 /* Resources/TrayIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F9 /* Resources/TrayIcon.png */; };
 		A100000000000000000000FA /* NativeToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeToolView.swift */; };
 		A100000000000000000000FB /* Eyedropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FD /* Eyedropper.swift */; };
+		A100000000000000000000FE /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FF /* UpdateChecker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -86,6 +87,7 @@
 		A100000000000000000000F9 /* Resources/TrayIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Resources/TrayIcon.png; sourceTree = "<group>"; };
 		A100000000000000000000FC /* NativeToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeToolView.swift; sourceTree = "<group>"; };
 		A100000000000000000000FD /* Eyedropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Eyedropper.swift; sourceTree = "<group>"; };
+		A100000000000000000000FF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +148,7 @@
 				A100000000000000000000F5 /* ProviderBrandMark.swift */,
 				A100000000000000000000FC /* NativeToolView.swift */,
 				A100000000000000000000FD /* Eyedropper.swift */,
+				A100000000000000000000FF /* UpdateChecker.swift */,
 				A100000000000000000000F7 /* Resources/AppIcon.icns */,
 				A100000000000000000000F9 /* Resources/TrayIcon.png */,
 			);
@@ -263,6 +266,7 @@
 				A100000000000000000000D4 /* UsageQuota.swift in Sources */,
 				A100000000000000000000FA /* NativeToolView.swift in Sources */,
 				A100000000000000000000FB /* Eyedropper.swift in Sources */,
+				A100000000000000000000FE /* UpdateChecker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
