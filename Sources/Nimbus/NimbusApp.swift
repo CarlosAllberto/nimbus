@@ -64,6 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var usageObserver: AnyCancellable?
     private var usageMenuItem: NSMenuItem?
     private var usageSeparatorItem: NSMenuItem?
+    private var updateObserver: AnyCancellable?
+    private var updateMenuItem: NSMenuItem?
+    private var updateSeparatorItem: NSMenuItem?
     private var titlebarObserver: NSKeyValueObservation?
 
     /// The real Nimbus mark, shared with the web app's own tray asset, marked
@@ -95,6 +98,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.button?.toolTip = "Nimbus"
         let menu = NSMenu()
         menu.delegate = self
+
+        // Above the usage line on purpose: when present, it's the most
+        // time-sensitive, actionable item in the menu.
+        let updateItem = NSMenuItem(title: "", action: #selector(openLatestRelease), keyEquivalent: "")
+        updateItem.isHidden = true
+        menu.addItem(updateItem)
+        let updateSeparator = NSMenuItem.separator()
+        updateSeparator.isHidden = true
+        menu.addItem(updateSeparator)
+        updateMenuItem = updateItem
+        updateSeparatorItem = updateSeparator
 
         // How much of today is left, in the one place reachable without opening
         // the app at all. Disabled on purpose: it reports, it isn't an action.
@@ -178,6 +192,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observeKeyWindowChanges()
         observeAuthChanges()
         observeUsageChanges()
+        observeUpdateChanges()
+        // Unauthenticated and not menu-gated, unlike the usage fetch above:
+        // update availability isn't tied to sign-in, so this checks once
+        // right at launch rather than waiting for the first menu open.
+        Task { UpdateIndicator.shared.update(await UpdateChecker.checkForUpdate()) }
     }
 
     /// Signing in swaps the window's root content (the sign-in gate gives way
@@ -251,6 +270,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         usageMenuItem.title = snapshot.label
         usageMenuItem.isHidden = false
         usageSeparatorItem?.isHidden = false
+    }
+
+    /// Keeps the status-bar update line in step with the checker, the same
+    /// observe-then-refresh shape as `observeUsageChanges()`.
+    private func observeUpdateChanges() {
+        updateObserver = UpdateIndicator.shared.objectWillChange.sink { [weak self] _ in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.refreshUpdateMenuItem() }
+            }
+        }
+        refreshUpdateMenuItem()
+    }
+
+    private func refreshUpdateMenuItem() {
+        guard let updateMenuItem else { return }
+        guard let info = UpdateIndicator.shared.available else {
+            updateMenuItem.isHidden = true
+            updateSeparatorItem?.isHidden = true
+            return
+        }
+        updateMenuItem.title = "Update Available (Build \(info.build))"
+        updateMenuItem.isHidden = false
+        updateSeparatorItem?.isHidden = false
+    }
+
+    @objc private func openLatestRelease() {
+        NSWorkspace.shared.open(UpdateChecker.releasePageURL)
     }
 
     /// Subscribes to every window in the app becoming key, no `object:`
@@ -502,8 +548,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// device may have spent from the same allowance — so opening the menu asks
     /// the server for a fresh one. Read-only: it never consumes.
     func menuWillOpen(_ menu: NSMenu) {
-        guard isSignedIn else { return }
-        Task { _ = await UsageQuota.fetchCurrent() }
+        if isSignedIn {
+            Task { _ = await UsageQuota.fetchCurrent() }
+        }
+        // Unlike usage, update availability has nothing to do with sign-in,
+        // so this isn't gated on it.
+        Task { UpdateIndicator.shared.update(await UpdateChecker.checkForUpdate()) }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

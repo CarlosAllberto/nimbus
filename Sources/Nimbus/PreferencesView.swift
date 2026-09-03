@@ -28,6 +28,11 @@ struct PreferencesView: View {
 
 private struct GeneralPreferencesTab: View {
     @Binding var theme: NimbusTheme
+    @ObservedObject private var updateIndicator = UpdateIndicator.shared
+
+    private var currentVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -40,6 +45,21 @@ private struct GeneralPreferencesTab: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(width: 160, alignment: .leading)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Version \(currentVersion) (build \(UpdateChecker.currentBuild))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let info = updateIndicator.available {
+                    HStack(spacing: 10) {
+                        Text("A newer build (#\(info.build)) is available.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button("Download") { NSWorkspace.shared.open(UpdateChecker.releasePageURL) }
+                            .buttonStyle(.link)
+                    }
+                }
             }
         }
         .padding(24)
