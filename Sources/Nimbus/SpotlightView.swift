@@ -95,15 +95,16 @@ private struct SpotlightResultRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: tool.icon)
-                .frame(width: 22)
+                .font(.title3)
+                .frame(width: 26)
                 .foregroundStyle(isHighlighted ? .white : .secondary)
             Text(tool.name)
-                .font(.body)
+                .font(.title3)
                 .foregroundStyle(isHighlighted ? .white : .primary)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(isHighlighted ? Color.accentColor : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .contentShape(Rectangle())
     }
