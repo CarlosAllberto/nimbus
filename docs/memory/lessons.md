@@ -15,6 +15,29 @@ rule, promote it to [rules.md](rules.md).
 
 ## Entries
 
+### 2026-09-03 — The CI runner's SDK, not the code, decides which macOS design language the app draws in
+
+- **Problem:** downloaded builds looked visibly wrong next to the same commit
+  built locally — squarer window corners, sidebar running edge to edge with a
+  hard divider instead of an inset floating panel, popup buttons with their
+  chevrons in filled blue boxes. Identical source, identical deployment
+  target, completely different chrome.
+- **Cause:** macOS picks an app's appearance from the SDK it was *linked
+  against*, not from its deployment target or anything in the code. CI ran on
+  `macos-14`, whose newest Xcode (16.2) carries the macOS 15 SDK
+  (`LC_BUILD_VERSION` → `sdk 15.2`), so every published build opted itself out
+  of the current design language. Local Xcode 26 links against the macOS 26.5
+  SDK, hence the mismatch.
+- **Rule:** CI builds against the same major SDK as local development.
+  `otool -l <binary> | grep -A4 LC_BUILD_VERSION` is the one-line check that
+  settles "why does this look different" arguments, and it beats any amount of
+  staring at screenshots.
+- **Context:** `.github/workflows/ci.yml` (`runs-on: macos-26`). First guess
+  was window focus state (macOS does grey out sidebar selection when a window
+  isn't key), which was wrong and cost a round trip — the giveaway that it
+  wasn't focus was that the *unselected* chrome differed too: corner radii and
+  control styling don't change with focus.
+
 ### 2026-09-03 — Quick Drop bypassed `UsageQuota` entirely — a second call site duplicating the sidecar call needs the gate too
 
 - **Problem:** the four Quick Drop wells ran tools with no daily-limit check

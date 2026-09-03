@@ -65,8 +65,18 @@ it go stale.
 
 - **Rule:** a symbol from an SDK newer than the oldest toolchain that must build
   the project goes behind `#if compiler(>=x)`, not just `if #available`.
-  **Why:** availability is runtime, symbol resolution is compile time, and CI
-  builds on `macos-14` — see lessons.md, 2026-08-31.
+  **Why:** availability is runtime, symbol resolution is compile time — see
+  lessons.md, 2026-08-31. (CI ran on `macos-14`/Xcode 16 when this was written;
+  it builds on `macos-26`/Xcode 26 now, matching local, so the gap this guards
+  against is currently closed — but it reopens the moment the two diverge.)
+
+- **Rule:** CI builds against the same major SDK as local development
+  (`runs-on: macos-26`, Xcode 26). Bumping the deployment target is a separate
+  decision from bumping the SDK; don't conflate them.
+  **Why:** macOS picks an app's design language from the SDK it was linked
+  against, so building on an older image silently ships the previous
+  appearance — square window corners, edge-to-edge sidebar, boxed popup
+  chevrons — while local builds look right. See lessons.md, 2026-09-03.
 
 - **Rule:** transient panels activate the app but never call
   `setActivationPolicy`; only a real window changes the policy.

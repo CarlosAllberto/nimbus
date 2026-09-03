@@ -15,15 +15,20 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: macos-14
+    # macos-26, not macos-14: the SDK an app is linked against is what macOS
+    # reads to decide which design language to draw it in. macos-14's newest
+    # Xcode (16.2) ships the macOS 15 SDK, so every published build came out
+    # drawing itself in the pre-Tahoe appearance — square-ish window corners,
+    # edge-to-edge sidebar, boxed popup-button chevrons — while local builds
+    # (Xcode 26, macOS 26 SDK) looked correct. Same deployment target either
+    # way; only the SDK changes.
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Select newest available Xcode
-        # macos-14's default xcode-select resolves to a Swift 5.10 toolchain,
-        # while Package.swift declares swift-tools-version 6.0 (Xcode 16+).
-        # Pick the highest-versioned Xcode already on the runner image
-        # instead of pinning one, so a future image bump can't reintroduce
-        # this by dropping the exact version this pointed to.
+        # The image's default is already the newest, but pinning to "highest
+        # installed" rather than a version string means a future image bump
+        # can't silently drop us onto an older SDK again.
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
       - name: Lint
         run: make lint
@@ -37,7 +42,9 @@ jobs:
     # trigger at all (see the `if`).
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: macos-14
+    # Same macOS 26 SDK reason as `validate` above — doubly so here, since
+    # this is the job whose output people actually download and look at.
+    runs-on: macos-26
     permissions:
       contents: read
     steps:
