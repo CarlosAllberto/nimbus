@@ -15,6 +15,58 @@ rule, promote it to [rules.md](rules.md).
 
 ## Entries
 
+### 2026-09-03 — Quick Drop bypassed `UsageQuota` entirely — a second call site duplicating the sidecar call needs the gate too
+
+- **Problem:** the four Quick Drop wells ran tools with no daily-limit check
+  and no usage increment at all — a signed-in free/basic user could drop
+  files through Quick Drop indefinitely after exhausting the same limit in
+  the main window.
+- **Cause:** `QuickDropView.process(tool:acceptance:)` is a second, parallel
+  implementation of `FileToolView.runTool()` (same sidecar call, same
+  `writeResult`, explicitly documented as mirroring it) — but it was written
+  before `UsageQuota.checkAndConsume()`/`releaseOnFailure()` existed in the
+  main path, and never got updated when that gate was added there.
+- **Rule:** `UsageQuota.checkAndConsume()` gates every unit of tool usage,
+  not just the ones reachable from `FileToolView`/`FormToolView`. Any new or
+  existing call site that hits the sidecar/API directly (Quick Drop today,
+  anything file-tool-shaped added later) needs its own
+  `checkAndConsume()`/`releaseOnFailure()` pair — grep for other direct
+  `apiClient.process(` call sites when adding a gate like this one.
+- **Context:** `Sources/Nimbus/QuickDropView.swift` (`process`),
+  `Sources/Nimbus/FileToolView.swift` (`runTool`, the original gated path),
+  `Sources/Nimbus/UsageQuota.swift`.
+
+### 2026-09-03 — `NSApp.activate()` raises an app's other windows by itself, not just via `applicationDidBecomeActive`
+
+- **Problem:** the new global Pick Color shortcut (⌘⌃C) worked correctly, but
+  whenever Nimbus's main window happened to be open (visible but not
+  frontmost — some other app had focus), it jumped in front of that other app
+  the moment the shortcut fired. Quick Drop's shortcut never does this.
+  First attempt fixed the wrong layer: adding
+  `EyedropperController.shared.isActive` to `applicationDidBecomeActive`'s
+  raise-`mainWindow` guard did not help, because macOS itself reorders an
+  app's windows to the front as part of `NSApp.activate()` — that happens
+  before, and independently of, whatever `applicationDidBecomeActive` goes on
+  to do.
+- **Cause:** `EyedropperController.start()` called `NSApp.activate()` to get a
+  window that could take key/Escape/click. But its overlay panels are already
+  `.nonactivatingPanel` (`EyedropperOverlayPanel`, `EyedropperLoupePanel`) —
+  by design that style mask lets a panel become key and receive events
+  *without* activating the owning app at all, exactly like `QuickDropPanel`
+  and the Spotlight panel, neither of which ever calls `NSApp.activate()` in
+  their open path.
+- **Rule:** a transient overlay/panel built on `.nonactivatingPanel` should
+  never call `NSApp.activate()` to take input — `makeKey()` /
+  `makeKeyAndOrderFront(nil)` alone is enough, and skipping `activate()`
+  is what keeps the rest of the app's windows exactly where they were.
+  Reach for `NSApp.activate()` only for the narrow case Quick Drop uses it
+  for (presenting `NSOpenPanel`, which needs a truly active app) — and even
+  then, gate any resulting `applicationDidBecomeActive` side effect (like
+  raising `mainWindow`) with that feature's own visible/active flag.
+- **Context:** `Sources/Nimbus/Eyedropper.swift` (`EyedropperController.start`),
+  `Sources/Nimbus/NimbusApp.swift` (`applicationDidBecomeActive`),
+  `Sources/Nimbus/Eyedropper.swift` (`EyedropperController.start`).
+
 ### 2026-08-31 — SwiftUI `.shadow` over a glass backdrop paints a square halo
 
 - **Problem:** the Quick Drop card had a dark square halo around its rounded

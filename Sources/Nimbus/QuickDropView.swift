@@ -160,7 +160,27 @@ struct QuickDropView: View {
             let fileFieldName = tool.id == "to-webm" ? "video" : "file"
             let sourceURLs = run?.items.map(\.url) ?? []
 
-            for (index, sourceURL) in sourceURLs.enumerated() {
+            // Same gate as `FileToolView.runTool()`: one unit per file,
+            // checked right before that file's request. Without this, Quick
+            // Drop's four wells were a free side door around the daily limit
+            // — they called the sidecar directly and never touched
+            // `UsageQuota` at all.
+            fileLoop: for (index, sourceURL) in sourceURLs.enumerated() {
+                var consumedCurrentFile = false
+                switch await UsageQuota.checkAndConsume() {
+                case let .allowed(consumed):
+                    consumedCurrentFile = consumed
+                case let .blocked(message):
+                    // Every row from here on never got a chance to run —
+                    // same "shares one reason" treatment as the sidecar-down
+                    // catch below.
+                    let indices = run?.items.indices ?? (0..<0)
+                    for remainingIndex in indices where remainingIndex >= index {
+                        withAnimation(.snappy) { run?.items[remainingIndex].status = .failed(message) }
+                    }
+                    break fileLoop
+                }
+
                 do {
                     let fileData = try Data(contentsOf: sourceURL)
                     guard fileData.count <= acceptance.maximumBytes else {
@@ -177,6 +197,7 @@ struct QuickDropView: View {
                     written.append(outputURL)
                     withAnimation(.snappy) { run?.items[index].status = .done }
                 } catch {
+                    if consumedCurrentFile { UsageQuota.releaseOnFailure() }
                     withAnimation(.snappy) { run?.items[index].status = .failed(error.localizedDescription) }
                 }
             }

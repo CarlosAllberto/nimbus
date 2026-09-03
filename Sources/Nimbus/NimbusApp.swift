@@ -42,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var quickDropHotKey: GlobalHotKey?
     private var spotlightController: SpotlightPanelController?
     private var spotlightHotKey: GlobalHotKey?
+    private var pickColorHotKey: GlobalHotKey?
     /// Tracks whether the *last* window of Nimbus to take key focus was
     /// `mainWindow`. Updated in real time via `NSWindow.didBecomeKeyNotification`
     /// so the value reflects what was true right before focus left the app
@@ -123,6 +124,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             keyEquivalent: QuickDropShortcut.menuKeyEquivalent
         )
         quickDropItem.keyEquivalentModifierMask = QuickDropShortcut.menuModifiers
+        let pickColorItem = menu.addItem(
+            withTitle: "Pick Color",
+            action: #selector(pickColorAndCopy),
+            keyEquivalent: PickColorShortcut.menuKeyEquivalent
+        )
+        pickColorItem.keyEquivalentModifierMask = PickColorShortcut.menuModifiers
         menu.addItem(.separator())
         menu.addItem(withTitle: "Preferences…", action: #selector(showPreferences), keyEquivalent: ",")
         menu.addItem(.separator())
@@ -157,6 +164,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.spotlightController?.toggle()
         }
 
+        // Same silent-failure story as the other two: the Pick Color menu
+        // item above is the alternate path if ⌘⌃C is owned elsewhere.
+        pickColorHotKey = GlobalHotKey(
+            keyCode: PickColorShortcut.keyCode,
+            modifiers: PickColorShortcut.modifiers
+        ) { [weak self] in
+            self?.pickColorAndCopy()
+        }
+
         AuthSession.shared.restoreSessionAtLaunch()
 
         observeKeyWindowChanges()
@@ -174,8 +190,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         authObserver = AuthSession.shared.objectWillChange.sink { [weak self] _ in
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
-                    guard let self, let window = self.mainWindow else { return }
-                    self.applyChrome(to: window)
+                    guard let self else { return }
+                    if let window = self.mainWindow {
+                        self.applyChrome(to: window)
+                    }
+                    // Fetches the usage snapshot as soon as sign-in resolves
+                    // (including the restore-at-launch path), not just when the
+                    // tray menu is opened. Without this, `UsageIndicator.shared
+                    // .snapshot` is still nil the first time the user ever
+                    // clicks the status item — `menuWillOpen`'s own fetch fires
+                    // after the menu is already on screen, so the usage line
+                    // stays hidden until that round trip lands.
+                    if self.isSignedIn {
+                        Task { _ = await UsageQuota.fetchCurrent() }
+                    }
                 }
             }
         }
@@ -265,6 +293,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         spotlightController?.toggle()
     }
 
+    /// No sign-in gate and no window shown, unlike the two toggles above —
+    /// `EyedropperController.start` does activate Nimbus (needed for the
+    /// overlay panels to take key events), but the main window/tool UI never
+    /// opens; the pick just lands straight on the clipboard. Silently no-ops
+    /// if Screen Recording access isn't granted or a pick is already in
+    /// progress (`start` itself guards both).
+    @objc private func pickColorAndCopy() {
+        EyedropperController.shared.start(
+            onPick: { color in
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.setString(EyedropperController.hexString(for: color), forType: .string)
+            },
+            onCancel: {}
+        )
+    }
+
     /// `showSettingsWindow:` is the selector SwiftUI's `Settings` scene
     /// registers on the app; there is no typed API to trigger it from AppKit.
     @objc private func showPreferences() {
@@ -278,6 +323,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // raise the main window right on top of — or instead of — the panel
         // the user just asked to see. Same story for Spotlight: opening it
         // alone must not yank the main window up in front of the panel.
+        // (Pick Color's eyedropper does not need this guard: its overlay is
+        // `.nonactivatingPanel` and never calls `NSApp.activate()` — see
+        // `EyedropperController.start()`.)
         guard quickDropController.isVisible == false, spotlightController?.isVisible != true else { return }
         // Preferences and the main window both belong to Nimbus; if
         // Preferences was the last window the user had focus on, becoming
@@ -463,6 +511,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // comment on `unregister()`.
         quickDropHotKey?.unregister()
         spotlightHotKey?.unregister()
+        pickColorHotKey?.unregister()
         usageObserver = nil
         if let keyWindowObserver {
             NotificationCenter.default.removeObserver(keyWindowObserver)

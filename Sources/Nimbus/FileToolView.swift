@@ -171,7 +171,6 @@ struct FileToolView: View {
     @State private var importErrorMessage: String?
     @State private var isProcessing = false
     @State private var processedCount = 0
-    @State private var runTask: Task<Void, Never>?
     @State private var fileStatuses: [URL: FileRunStatus] = [:]
     @State private var completion: RunCompletion?
     @State private var processingErrorMessage: String?
@@ -325,19 +324,15 @@ struct FileToolView: View {
             HStack(spacing: 12) {
                 controls
 
-                if isProcessing {
-                    Button("Cancel") { runTask?.cancel() }
-                        .buttonStyle(.bordered)
-                }
-
                 Button {
                     guard requestFields != nil else { return }
-                    runTask = Task { await runTool() }
+                    Task { await runTool() }
                 } label: {
                     Text(configuration.actionTitle)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
                 .frame(maxWidth: .infinity)
                 .disabled(!canSubmit || isProcessing)
             }
@@ -468,10 +463,6 @@ struct FileToolView: View {
             let extras = try extraFiles()
 
             fileLoop: for sourceURL in sources {
-                // Checked between files, not mid-encode: a half-written output
-                // would be worse than finishing the one already in flight.
-                if Task.isCancelled { cancelled = true; break fileLoop }
-
                 switch await UsageQuota.checkAndConsume() {
                 case let .allowed(consumed):
                     consumedCurrentFile = consumed
@@ -506,9 +497,6 @@ struct FileToolView: View {
                 }
                 consumedCurrentFile = false
             }
-        } catch is CancellationError {
-            cancelled = true
-            if consumedCurrentFile { UsageQuota.releaseOnFailure() }
         } catch {
             if consumedCurrentFile { UsageQuota.releaseOnFailure() }
             // Whatever already landed on disk stays there; the message names

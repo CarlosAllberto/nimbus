@@ -28,6 +28,13 @@ final class EyedropperController: NSObject {
 
     static func isAuthorized() -> Bool { CGPreflightScreenCaptureAccess() }
 
+    /// Used by the global Pick Color shortcut to format the clipboard
+    /// contents after a pick.
+    static func hexString(for color: NSColor) -> String {
+        let rgb = color.usingColorSpace(.deviceRGB) ?? color
+        return String(format: "#%02X%02X%02X", Int((rgb.redComponent * 255).rounded()), Int((rgb.greenComponent * 255).rounded()), Int((rgb.blueComponent * 255).rounded()))
+    }
+
     /// Mostra o prompt do sistema só na 1ª vez — uma vez negado, o macOS
     /// não pede de novo por esta chamada (restrição do próprio TCC, não
     /// bug daqui). Bloqueia a thread chamadora enquanto o diálogo do
@@ -63,18 +70,24 @@ final class EyedropperController: NSObject {
         self.onPick = onPick
         self.onCancel = onCancel
 
-        NSApp.activate()
         // The pointer is hidden while picking: the loupe sits on the cursor, so
         // the arrow would cover the very pixels being read, and the target
         // square is the pointer now. Balanced by `unhide` in `teardown`, which
         // every exit path goes through.
         NSCursor.hide()
 
+        // No `NSApp.activate()`: like `QuickDropPanel`, the overlay is a
+        // `.nonactivatingPanel` — `makeKey()` alone gives it Escape/click
+        // without activating Nimbus, so a main window that happens to be
+        // open never gets raised on top of the overlay.
         overlayPanels = NSScreen.screens.map { EyedropperOverlayPanel(screen: $0) }
         overlayPanels.forEach { $0.orderFrontRegardless() }
         overlayPanels.first?.makeKey()
 
         let loupePanel = EyedropperLoupePanel()
+        // Position under the cursor before showing it, so it never flashes
+        // at its default bottom-left origin first.
+        loupePanel.position(at: NSEvent.mouseLocation)
         self.loupePanel = loupePanel
         loupePanel.orderFrontRegardless()
 
@@ -316,7 +329,11 @@ final class EyedropperOverlayPanel: NSPanel {
 /// `EyedropperOverlayPanel` por baixo.
 final class EyedropperLoupePanel: NSPanel {
     private static let diameter: CGFloat = 132
-    private static let labelHeight: CGFloat = 26
+    private static let pillHeight: CGFloat = 24
+    /// Gap between the lens circle and the pill below it, so the two read as
+    /// separate shapes instead of one fused blob.
+    private static let pillGap: CGFloat = 8
+    private static let labelHeight: CGFloat = pillHeight + pillGap
     private static let size = NSSize(width: diameter, height: diameter + labelHeight)
 
     /// A plain layer rather than an `NSImageView`: the view re-samples the
@@ -326,7 +343,6 @@ final class EyedropperLoupePanel: NSPanel {
     private let hexLabel = NSTextField(labelWithString: "")
     private let ring = CAShapeLayer()
     private let pill = CALayer()
-    private let swatch = CALayer()
     /// Outlines the one pixel that will be picked. Without it the loupe shows
     /// a magnified patch with no way to tell which pixel it is reporting.
     private let target = CAShapeLayer()
@@ -363,24 +379,23 @@ final class EyedropperLoupePanel: NSPanel {
         ring.strokeColor = NSColor.white.cgColor
         ring.lineWidth = 2
 
-        // The readout carries a swatch of the sampled colour beside the value:
-        // the number alone is hard to judge, and the swatch answers "is this
-        // the colour I meant" without leaving the lens.
-        let pillWidth: CGFloat = 104
-        let pillHeight: CGFloat = 24
-        pill.frame = NSRect(x: (Self.diameter - pillWidth) / 2, y: 0, width: pillWidth, height: pillHeight)
-        pill.backgroundColor = NSColor.black.withAlphaComponent(0.88).cgColor
-        pill.cornerRadius = pillHeight / 2
+        // The pill's own background carries the sampled colour — no separate
+        // swatch needed. Corners are lightly rounded rather than fully
+        // pill-shaped, so it reads as a small chip rather than a capsule. The
+        // border echoes the lens ring, thinner so the ring stays the primary
+        // shape.
+        let pillWidth: CGFloat = 84
+        pill.frame = NSRect(x: (Self.diameter - pillWidth) / 2, y: 0, width: pillWidth, height: Self.pillHeight)
+        pill.cornerRadius = 6
+        pill.borderColor = NSColor.white.withAlphaComponent(0.55).cgColor
+        pill.borderWidth = 1
 
-        swatch.frame = NSRect(x: 8, y: (pillHeight - 13) / 2, width: 13, height: 13)
-        swatch.cornerRadius = 3
-        swatch.borderColor = NSColor.white.withAlphaComponent(0.55).cgColor
-        swatch.borderWidth = 1
-
-        hexLabel.frame = NSRect(x: pill.frame.minX + 26, y: 3, width: pillWidth - 32, height: 18)
+        // Nudged 1pt below true centre: the hex string has no descenders, so
+        // centring on the full line height (which reserves descender space)
+        // reads as too much padding underneath the digits.
+        hexLabel.frame = NSRect(x: pill.frame.minX, y: 2, width: pillWidth, height: 18)
         hexLabel.font = .monospacedSystemFont(ofSize: 12, weight: .semibold)
-        hexLabel.textColor = .white
-        hexLabel.alignment = .left
+        hexLabel.alignment = .center
 
         // One magnified pixel, in points.
         let pixelSide = Self.diameter / CGFloat(EyedropperController.capturedPixels)
@@ -426,7 +441,6 @@ final class EyedropperLoupePanel: NSPanel {
         container.layer?.addSublayer(grid)
         container.layer?.addSublayer(target)
         container.layer?.addSublayer(ring)
-        pill.addSublayer(swatch)
         container.layer?.addSublayer(pill)
         container.addSubview(hexLabel)
         contentView = container
@@ -442,10 +456,19 @@ final class EyedropperLoupePanel: NSPanel {
             CATransaction.commit()
         }
         hexLabel.stringValue = Self.hex(for: color)
+        hexLabel.textColor = Self.readableTextColor(on: color)
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        swatch.backgroundColor = color.cgColor
+        pill.backgroundColor = color.cgColor
         CATransaction.commit()
+        position(at: mouseLocation)
+    }
+
+    /// Moves the panel so the lens is centred on `mouseLocation`, independent
+    /// of `update`. Called once right after init, before the panel is first
+    /// ordered front — otherwise it briefly shows at its `contentRect`
+    /// origin (screen bottom-left) until the first captured frame arrives.
+    func position(at mouseLocation: NSPoint) {
         // The circle is centred on the cursor — not the panel, whose label sits
         // below the circle and would pull it off-centre.
         setFrameOrigin(NSPoint(
@@ -457,5 +480,14 @@ final class EyedropperLoupePanel: NSPanel {
     private static func hex(for color: NSColor) -> String {
         let rgb = color.usingColorSpace(.deviceRGB) ?? color
         return String(format: "#%02X%02X%02X", Int(rgb.redComponent * 255), Int(rgb.greenComponent * 255), Int(rgb.blueComponent * 255))
+    }
+
+    /// With the pill's background now the sampled colour itself, a fixed
+    /// white label would vanish over light samples — pick black or white by
+    /// the background's relative luminance instead.
+    private static func readableTextColor(on background: NSColor) -> NSColor {
+        let rgb = background.usingColorSpace(.deviceRGB) ?? background
+        let luminance = 0.2126 * rgb.redComponent + 0.7152 * rgb.greenComponent + 0.0722 * rgb.blueComponent
+        return luminance > 0.6 ? .black : .white
     }
 }

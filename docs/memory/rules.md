@@ -12,6 +12,17 @@ it go stale.
 
 ## Current rules
 
+- **Rule:** a transient `.nonactivatingPanel` overlay never calls
+  `NSApp.activate()` to take key/Escape/click — `makeKey()` /
+  `makeKeyAndOrderFront(nil)` alone is enough. If a feature genuinely needs
+  the app active (e.g. presenting `NSOpenPanel`), gate whatever
+  `applicationDidBecomeActive` does in response (like raising `mainWindow`)
+  with that feature's own visible/active flag.
+  **Why:** `NSApp.activate()` itself reorders the app's other windows to the
+  front — before `applicationDidBecomeActive` runs — so guarding only that
+  delegate method doesn't stop the jump; not calling `activate()` at all does
+  — see lessons.md, 2026-09-03.
+
 - **Rule:** tool logic is not reimplemented in Swift. It is ported from the
   matching `app/api/tools/{group}/{segment}/route.ts` in the Next repo into
   `Sidecar/tools/<id>.mjs`, minus session, Supabase and quota. Keep the request

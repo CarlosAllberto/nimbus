@@ -27,6 +27,18 @@ enum SpotlightShortcut {
     static let menuModifiers: NSEvent.ModifierFlags = [.command, .shift]
 }
 
+/// Pick Color shortcut, ⌘⌃C. Starts the live eyedropper straight from
+/// anywhere on the system — the next click copies that pixel's hex to the
+/// clipboard without ever showing a Nimbus window.
+enum PickColorShortcut {
+    static let keyCode = UInt32(kVK_ANSI_C)
+    static let modifiers = UInt32(cmdKey | controlKey)
+
+    /// The same combination expressed for an `NSMenuItem`.
+    static let menuKeyEquivalent = "c"
+    static let menuModifiers: NSEvent.ModifierFlags = [.command, .control]
+}
+
 /// Thin wrapper over Carbon's `RegisterEventHotKey`. Carbon is the right tool
 /// here because, unlike `NSEvent.addGlobalMonitorForEvents`, it does not
 /// require Accessibility permission — no privacy prompt for the user.
