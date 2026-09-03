@@ -46,15 +46,25 @@ jobs:
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
       - name: Record build timestamp
         # Computed once and reused everywhere below, so the release notes and
-        # version.json can't end up a few seconds apart from two separate
-        # `date` calls.
-        run: echo "BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+        # the appcast's pubDate can't end up a few seconds apart from two
+        # separate `date` calls. Two formats: ISO 8601 for the human-readable
+        # release notes, RFC 2822 for the appcast (RSS/pubDate's own format).
+        run: |
+          echo "BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          echo "PUB_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")" >> "$GITHUB_ENV"
+      - name: Resolve Sparkle's CLI tools
+        # `swift package resolve` (not a full build) is enough to pull the
+        # binary artifact SPM fetches for Sparkle, which includes `sign_update`
+        # at .build/artifacts/sparkle/Sparkle/bin/ — needed below to sign the
+        # release for the auto-updater.
+        run: swift package resolve
       - name: Stamp the build number into Info.plist
         # github.run_number is monotonically increasing per workflow run
-        # (including failed ones), so it's a reliable "is there something
-        # newer" signal for UpdateChecker.swift — plain incrementing integer,
-        # no need to track or parse commit SHAs. Patches the checked-out
-        # copy only; the committed Info.plist keeps its placeholder "1" for
+        # (including failed ones), so it's a reliable version number for
+        # Sparkle (appcast.xml's sparkle:version, below) to compare against
+        # — plain incrementing integer, no need to track or parse commit
+        # SHAs. Patches the checked-out copy only; the committed Info.plist
+        # keeps its placeholder "1" for
         # local/Xcode dev builds, which is deliberately always older than
         # anything published.
         run: plutil -replace CFBundleVersion -string "${{ github.run_number }}" Sources/Nimbus/Info.plist
@@ -88,13 +98,32 @@ jobs:
         run: |
           cd build/Build/Products/Release
           ditto -c -k --sequesterRsrc --keepParent Nimbus.app Nimbus.zip
-      - name: Write version.json
-        # Published alongside Nimbus.zip at a stable path — UpdateChecker.swift
-        # fetches just this (a few bytes) rather than the whole zip to learn
-        # whether a newer build exists.
+      - name: Sign the update and write appcast.xml
+        # SPARKLE_PRIVATE_KEY is the EdDSA private key `generate_keys` made —
+        # unrelated to GitHub auth, it's what proves an update actually came
+        # from this pipeline. sign_update --ed-key-file - reads it from
+        # stdin. appcast.xml is what AppUpdater.swift's SUFeedURL points at:
+        # the single source of truth the app checks against, nothing else.
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          cat > build/Build/Products/Release/version.json <<EOF
-          {"build": ${{ github.run_number }}, "sha": "${{ github.sha }}", "builtAt": "${{ env.BUILT_AT }}"}
+          SPARKLE_BIN=.build/artifacts/sparkle/Sparkle/bin
+          SIGNATURE_ATTRS=$(echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_BIN/sign_update" --ed-key-file - build/Build/Products/Release/Nimbus.zip)
+          cat > build/Build/Products/Release/appcast.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Nimbus</title>
+              <item>
+                <title>Build ${{ github.run_number }}</title>
+                <pubDate>${{ env.PUB_DATE }}</pubDate>
+                <sparkle:version>${{ github.run_number }}</sparkle:version>
+                <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                <enclosure url="https://github.com/CarlosAllberto/nimbus-desktop-releases/releases/download/latest/Nimbus.zip" $SIGNATURE_ATTRS type="application/octet-stream" />
+              </item>
+            </channel>
+          </rss>
           EOF
       - name: Publish to nimbus-desktop-releases
         env:
@@ -117,6 +146,6 @@ jobs:
           else
             gh release create latest --repo "$REPO" --title "Nimbus (latest build)" --notes "$NOTES"
           fi
-          gh release upload latest build/Build/Products/Release/Nimbus.zip build/Build/Products/Release/version.json --repo "$REPO" --clobber
+          gh release upload latest build/Build/Products/Release/Nimbus.zip build/Build/Products/Release/appcast.xml --repo "$REPO" --clobber
       - name: Print download link
         run: echo "Download -> https://github.com/CarlosAllberto/nimbus-desktop-releases/releases/download/latest/Nimbus.zip"

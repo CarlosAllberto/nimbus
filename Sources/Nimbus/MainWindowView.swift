@@ -48,7 +48,7 @@ struct MainWindowView: View {
                     // not scrolled — no title text to ever run into.
                     if let info = updateIndicator.available {
                         Button {
-                            NSWorkspace.shared.open(UpdateChecker.releasePageURL)
+                            AppUpdater.shared.checkForUpdates()
                         } label: {
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.title3)
@@ -56,7 +56,7 @@ struct MainWindowView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(.trailing, 14)
-                        .help("Update available (build \(info.build)) — click to download")
+                        .help("Update available (\(info.versionString)) — click to install")
                     }
                 }
                 ScrollViewReader { proxy in

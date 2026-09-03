@@ -20,5 +20,13 @@
 	<true/>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>Nimbus uses screen recording access to power the Pick Color eyedropper, which previews colors live as you move the cursor.</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/CarlosAllberto/nimbus-desktop-releases/releases/download/latest/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>GlkQVJj0UobZhEWxC6daqCNZR87inqBp94f0V1Kk2Xs=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

@@ -39,6 +39,10 @@ private struct GeneralPreferencesTab: View {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
     }
 
+    private var currentBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             FormRow(label: "Appearance") {
@@ -74,15 +78,15 @@ private struct GeneralPreferencesTab: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Version \(currentVersion) (build \(UpdateChecker.currentBuild))")
+                Text("Version \(currentVersion) (build \(currentBuild))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if let info = updateIndicator.available {
                     HStack(spacing: 10) {
-                        Text("A newer build (#\(info.build)) is available.")
+                        Text("A newer version (\(info.versionString)) is available.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Button("Download") { NSWorkspace.shared.open(UpdateChecker.releasePageURL) }
+                        Button("Install") { AppUpdater.shared.checkForUpdates() }
                             .buttonStyle(.link)
                     }
                 }

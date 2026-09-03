@@ -5,9 +5,13 @@ let package = Package(
     name: "Nimbus",
     platforms: [.macOS(.v14)],
     products: [.executable(name: "Nimbus", targets: ["Nimbus"])],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")
+    ],
     targets: [
         .executableTarget(
             name: "Nimbus",
+            dependencies: [.product(name: "Sparkle", package: "Sparkle")],
             path: "Sources/Nimbus",
             exclude: ["Info.plist"],
             // Declared so `swift build` doesn't treat them as stray files. The

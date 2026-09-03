@@ -101,7 +101,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // Above the usage line on purpose: when present, it's the most
         // time-sensitive, actionable item in the menu.
-        let updateItem = NSMenuItem(title: "", action: #selector(openLatestRelease), keyEquivalent: "")
+        let updateItem = NSMenuItem(title: "", action: #selector(checkForAppUpdates), keyEquivalent: "")
         updateItem.isHidden = true
         menu.addItem(updateItem)
         let updateSeparator = NSMenuItem.separator()
@@ -193,10 +193,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observeAuthChanges()
         observeUsageChanges()
         observeUpdateChanges()
-        // Unauthenticated and not menu-gated, unlike the usage fetch above:
-        // update availability isn't tied to sign-in, so this checks once
-        // right at launch rather than waiting for the first menu open.
-        Task { UpdateIndicator.shared.update(await UpdateChecker.checkForUpdate()) }
+        // Starts Sparkle's updater and its own background check schedule
+        // (SUEnableAutomaticChecks/SUScheduledCheckInterval in Info.plist).
+        // `UpdateIndicator` only ever changes in response to its delegate
+        // callbacks now — nothing here polls anything itself.
+        _ = AppUpdater.shared
     }
 
     /// Signing in swaps the window's root content (the sign-in gate gives way
@@ -290,13 +291,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             updateSeparatorItem?.isHidden = true
             return
         }
-        updateMenuItem.title = "Update Available (Build \(info.build))"
+        updateMenuItem.title = "Update Available (\(info.versionString))"
         updateMenuItem.isHidden = false
         updateSeparatorItem?.isHidden = false
     }
 
-    @objc private func openLatestRelease() {
-        NSWorkspace.shared.open(UpdateChecker.releasePageURL)
+    @objc private func checkForAppUpdates() {
+        AppUpdater.shared.checkForUpdates()
     }
 
     /// Subscribes to every window in the app becoming key, no `object:`
@@ -552,8 +553,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Task { _ = await UsageQuota.fetchCurrent() }
         }
         // Unlike usage, update availability has nothing to do with sign-in,
-        // so this isn't gated on it.
-        Task { UpdateIndicator.shared.update(await UpdateChecker.checkForUpdate()) }
+        // so this isn't gated on it. Background, not `checkForUpdates()`: a
+        // menu open must never pop Sparkle's own alert on its own — it only
+        // refreshes what `UpdateIndicator` shows, silently.
+        AppUpdater.shared.checkForUpdatesInBackground()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
