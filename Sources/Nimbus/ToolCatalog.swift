@@ -46,7 +46,8 @@ enum ToolCatalog {
 
         NimbusTool(id: "html-minify", name: "HTML Minify", summary: "Minify or unminify HTML.", icon: "chevron.left.forwardslash.chevron.right", group: .code),
         NimbusTool(id: "js-minify", name: "JavaScript Minify", summary: "Minify or unminify JavaScript.", icon: "curlybraces", group: .code),
-        NimbusTool(id: "json-creator", name: "JSON Creator", summary: "Create and format JSON.", icon: "curlybraces", group: .code),
+        // Hidden for now, not ready — re-add once it's in better shape.
+        // NimbusTool(id: "json-creator", name: "JSON Creator", summary: "Create and format JSON.", icon: "curlybraces", group: .code),
 
         NimbusTool(id: "password-generator", name: "Password Generator", summary: "Generate a secure password locally.", icon: "key", group: .tools),
         NimbusTool(id: "color-convert", name: "Color Convert", summary: "Convert between color formats.", icon: "paintpalette", group: .tools),
