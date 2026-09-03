@@ -38,7 +38,27 @@ struct MainWindowView: View {
     private var catalog: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
-                SidebarSearchField(query: $query, isFocused: $isSearchFocused)
+                HStack(spacing: 2) {
+                    SidebarSearchField(query: $query, isFocused: $isSearchFocused)
+                    // Anchored to the search row rather than floating over
+                    // the tool detail pane: ToolDetailView deliberately
+                    // extends its title into the top safe area, so anything
+                    // overlaid up there collided with it. This row is always
+                    // empty space to the field's right, sidebar visible or
+                    // not scrolled — no title text to ever run into.
+                    if let info = updateIndicator.available {
+                        Button {
+                            NSWorkspace.shared.open(UpdateChecker.releasePageURL)
+                        } label: {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.trailing, 14)
+                        .help("Update available (build \(info.build)) — click to download")
+                    }
+                }
                 ScrollViewReader { proxy in
                     List(selection: $selectedToolID) {
                         ForEach(ToolGroup.allCases) { group in
@@ -73,27 +93,6 @@ struct MainWindowView: View {
         } detail: {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
-        }
-        // A floating badge, not a toolbar item: two attempts at getting a
-        // custom item to sit beside NavigationSplitView's automatic sidebar
-        // toggle both failed on macOS — the native toggle carries a
-        // sidebar-width layout alignment a hand-rolled replacement doesn't
-        // inherit, so removing it left every `.navigation` item unmoored
-        // from the sidebar's actual width, floating over the detail title
-        // instead. This sidesteps NSToolbar entirely.
-        .overlay(alignment: .topTrailing) {
-            if let info = updateIndicator.available {
-                Button {
-                    NSWorkspace.shared.open(UpdateChecker.releasePageURL)
-                } label: {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.blue)
-                }
-                .buttonStyle(.plain)
-                .padding(10)
-                .help("Update available (build \(info.build)) — click to download")
-            }
         }
         .background {
             Button("Search") { isSearchFocused = true }
