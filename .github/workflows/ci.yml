@@ -44,6 +44,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Select newest available Xcode
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+      - name: Install Sidecar dependencies
+        # Sidecar/node_modules is gitignored (never committed), and the Xcode
+        # build phase below just copies whatever's on disk into the app's
+        # Resources — without this, the shipped build has a Sidecar folder
+        # with no dependencies installed, and every tool that runs through it
+        # fails for anyone who downloads the build.
+        working-directory: Sidecar
+        run: npm ci --omit=dev
       - name: Build release .app via Xcode
         # swift build only produces a bare executable, not a real .app bundle
         # (no Info.plist, icon, or resources) — see CLAUDE.md. Nimbus.xcodeproj
