@@ -3,16 +3,34 @@ import Foundation
 enum UsageQuota {
     struct Snapshot: Sendable {
         let usageCount: Int
+        /// Always the *effective* plan, resolved server-side through
+        /// `effective_subscription_plan` — never the raw column. An expired
+        /// trial and a past_due subscription both arrive here as "free",
+        /// which is what the gate itself enforces.
         let subscriptionPlan: String
+        /// Set only while a trial is actually still running; nil otherwise.
+        let trialEndsAt: Date?
 
         /// So exibicao — ver feature-spec 'dailyLimit: display-only, nunca
         /// decisao'. NUNCA lido por `checkAndConsume`.
         /// The one phrasing for "how much of today is left", shared by the
         /// Account tab and the status-bar menu so the two never drift apart.
         var label: String {
+            if let trialDaysLeft {
+                return "Trial · \(trialDaysLeft) day\(trialDaysLeft == 1 ? "" : "s") left"
+            }
             let planTitle = subscriptionPlan.capitalized
             guard let dailyLimit else { return "\(planTitle) · Unlimited" }
             return "\(planTitle) · \(usageCount) of \(dailyLimit) uses today"
+        }
+
+        /// Rounded up, so the last stretch under 24h still reads "1 day left"
+        /// rather than "0". nil once the end date has passed — the row keeps
+        /// `status = 'trialing'` forever, so the date is the only thing that
+        /// decides, exactly as `effective_subscription_plan` does.
+        var trialDaysLeft: Int? {
+            guard let trialEndsAt, trialEndsAt > Date() else { return nil }
+            return max(1, Int(ceil(trialEndsAt.timeIntervalSinceNow / 86_400)))
         }
 
         var dailyLimit: Int? {
@@ -48,7 +66,11 @@ enum UsageQuota {
         guard let response = try? await consume(userID: user.id, accessToken: token) else {
             return .allowed(consumed: false)
         }
-        let snapshot = Snapshot(usageCount: response.usageCount, subscriptionPlan: response.subscriptionPlan)
+        let snapshot = Snapshot(
+            usageCount: response.usageCount,
+            subscriptionPlan: response.subscriptionPlan,
+            trialEndsAt: response.trialEndsAt
+        )
         await UsageIndicator.shared.update(snapshot)
 
         guard response.allowed else {
@@ -91,6 +113,7 @@ enum UsageQuota {
         let allowed: Bool
         let usageCount: Int
         let subscriptionPlan: String
+        let trialEndsAt: Date?
     }
 
     private static func consume(userID: String, accessToken: String) async throws -> ConsumeResponse {
@@ -110,25 +133,17 @@ enum UsageQuota {
         _ = try await URLSession.shared.data(for: request)
     }
 
-    /// `reset_daily_usage_if_needed` primeiro — sem isso, um dia novo
-    /// ainda mostraria o `usage_count` de ontem ate a proxima consumicao
-    /// (fato 3; nome do parametro confirmado em
-    /// `hooks/use-subscription-profile.ts:27` do site).
+    /// `get_usage_snapshot` rather than reading the `users` row directly:
+    /// the row carries the *raw* plan, so an expired trial (or a past_due
+    /// subscription) read straight off it displayed as "Pro · Unlimited"
+    /// while the gate had already dropped the user to free. The RPC resolves
+    /// the plan through the same `effective_subscription_plan` the gate uses,
+    /// so the indicator can't disagree with what actually happens on a run.
+    /// It also calls `reset_daily_usage_if_needed` itself, which the client
+    /// used to have to do as a separate round trip (fact 3; parameter name
+    /// confirmed in the site's `hooks/use-subscription-profile.ts:27`).
     private static func fetchAndReset(userID: String, accessToken: String) async throws -> Snapshot {
-        let resetRequest = try rpcRequest(name: "reset_daily_usage_if_needed", userID: userID, accessToken: accessToken)
-        _ = try await URLSession.shared.data(for: resetRequest)
-
-        var components = URLComponents(
-            url: SupabaseConfiguration.url.appending(path: "/rest/v1/users"),
-            resolvingAgainstBaseURL: false
-        )!
-        components.queryItems = [
-            URLQueryItem(name: "select", value: "usage_count,subscription_plan,subscription_status,current_period_end"),
-            URLQueryItem(name: "id", value: "eq.\(userID)")
-        ]
-        var request = URLRequest(url: components.url!)
-        request.setValue(SupabaseConfiguration.anonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let request = try rpcRequest(name: "get_usage_snapshot", userID: userID, accessToken: accessToken)
         let (data, response) = try await URLSession.shared.data(for: request)
         try checkStatus(data: data, response: response)
         return try decodeUsersRow(from: data)
@@ -161,7 +176,12 @@ enum UsageQuota {
             let usageCount = row["usage_count"] as? Int,
             let plan = row["subscription_plan"] as? String
         else { throw SupabaseAuthError.invalidResponse }
-        return ConsumeResponse(allowed: allowed, usageCount: usageCount, subscriptionPlan: plan)
+        return ConsumeResponse(
+            allowed: allowed,
+            usageCount: usageCount,
+            subscriptionPlan: plan,
+            trialEndsAt: trialEndsAt(in: row)
+        )
     }
 
     private static func decodeUsersRow(from data: Data) throws -> Snapshot {
@@ -171,7 +191,21 @@ enum UsageQuota {
             let usageCount = row["usage_count"] as? Int,
             let plan = row["subscription_plan"] as? String
         else { throw SupabaseAuthError.invalidResponse }
-        return Snapshot(usageCount: usageCount, subscriptionPlan: plan)
+        return Snapshot(usageCount: usageCount, subscriptionPlan: plan, trialEndsAt: trialEndsAt(in: row))
+    }
+
+    /// Null whenever no trial is running, which is the common case — so a
+    /// missing or unparseable value is simply "no trial", never an error.
+    /// Postgres hands back fractional seconds ("...T20:50:30.549176+00:00")
+    /// and `ISO8601DateFormatter` needs to be told about them, so both
+    /// spellings are tried.
+    private static func trialEndsAt(in row: [String: Any]) -> Date? {
+        guard let raw = row["trial_ends_at"] as? String else { return nil }
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        plain.formatOptions = [.withInternetDateTime]
+        return withFraction.date(from: raw) ?? plain.date(from: raw)
     }
 
     /// Fora do MainActor de proposito — ver feature-spec 'Por que o token
