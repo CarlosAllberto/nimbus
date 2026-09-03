@@ -74,10 +74,13 @@ struct MainWindowView: View {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
         }
-        // `.navigation` places this beside the sidebar toggle `NavigationSplitView`
-        // already puts in the toolbar — this doesn't replace or remove any of
-        // the other places an update surfaces (status-bar menu, Preferences),
-        // just adds a fourth, higher-visibility one.
+        // The automatic sidebar toggle NavigationSplitView adds always lands
+        // first in the `.navigation` group, so a second item declared there
+        // ends up to its right, outside the sidebar, over the detail title —
+        // not what "next to the sidebar toggle, inside the sidebar" means.
+        // Removing it and adding both items ourselves, download first, is
+        // what actually puts the icon to the toggle's left.
+        .toolbar(removing: .sidebarToggle)
         .toolbar {
             if let info = updateIndicator.available {
                 ToolbarItem(placement: .navigation) {
@@ -89,6 +92,14 @@ struct MainWindowView: View {
                     }
                     .help("Update available (build \(info.build)) — click to download")
                 }
+            }
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    withAnimation { columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
+                .help("Toggle Sidebar")
             }
         }
         .background {
