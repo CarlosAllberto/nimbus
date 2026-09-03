@@ -70,35 +70,29 @@ struct MainWindowView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
-            // Has to sit on the sidebar's own content, not on the
-            // NavigationSplitView as a whole — applied up on the split view
-            // itself it silently no-ops (the automatic toggle and our own
-            // hand-rolled replacement both rendered, sandwiching the update
-            // icon between them instead of removing the automatic one).
-            .toolbar(removing: .sidebarToggle)
         } detail: {
             ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
                 .id(selectedTool.id)
         }
-        .toolbar {
+        // A floating badge, not a toolbar item: two attempts at getting a
+        // custom item to sit beside NavigationSplitView's automatic sidebar
+        // toggle both failed on macOS — the native toggle carries a
+        // sidebar-width layout alignment a hand-rolled replacement doesn't
+        // inherit, so removing it left every `.navigation` item unmoored
+        // from the sidebar's actual width, floating over the detail title
+        // instead. This sidesteps NSToolbar entirely.
+        .overlay(alignment: .topTrailing) {
             if let info = updateIndicator.available {
-                ToolbarItem(placement: .navigation) {
-                    Button {
-                        NSWorkspace.shared.open(UpdateChecker.releasePageURL)
-                    } label: {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .foregroundStyle(.blue)
-                    }
-                    .help("Update available (build \(info.build)) — click to download")
-                }
-            }
-            ToolbarItem(placement: .navigation) {
                 Button {
-                    withAnimation { columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly }
+                    NSWorkspace.shared.open(UpdateChecker.releasePageURL)
                 } label: {
-                    Image(systemName: "sidebar.left")
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.blue)
                 }
-                .help("Toggle Sidebar")
+                .buttonStyle(.plain)
+                .padding(10)
+                .help("Update available (build \(info.build)) — click to download")
             }
         }
         .background {
