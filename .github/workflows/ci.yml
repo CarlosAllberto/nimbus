@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/publish-releases] # TEMP: testing branch, remove before merge
   pull_request:
     branches: [main]
 
@@ -29,3 +29,65 @@ jobs:
         run: make lint
       - name: Build
         run: swift build
+
+  publish-build:
+    # Only main, and only after validate passes: a broken commit must never
+    # overwrite the build people are downloading. pull_request runs of
+    # `validate` never reach this job since it isn't in their `needs` chain
+    # trigger at all (see the `if`).
+    needs: validate
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/publish-releases') # TEMP: testing branch, remove before merge
+    runs-on: macos-14
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Select newest available Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+      - name: Build release .app via Xcode
+        # swift build only produces a bare executable, not a real .app bundle
+        # (no Info.plist, icon, or resources) — see CLAUDE.md. Nimbus.xcodeproj
+        # is the entry point that produces a distributable bundle.
+        # Unsigned on purpose: no Apple Developer account is wired into CI, so
+        # people downloading this will need to right-click > Open the first
+        # time to get past Gatekeeper's unidentified-developer warning.
+        run: |
+          xcodebuild \
+            -project Nimbus.xcodeproj \
+            -scheme Nimbus \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+      - name: Zip the app
+        # ditto, not zip: it preserves resource forks and extended attributes,
+        # which is what Apple's own tooling uses to archive .app bundles.
+        run: |
+          cd build/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent Nimbus.app Nimbus.zip
+      - name: Publish to nimbus-desktop-releases
+        env:
+          # A PAT with Contents: read/write on CarlosAllberto/nimbus-desktop-releases.
+          # The default GITHUB_TOKEN only has permissions inside *this* repo, so
+          # publishing to a different one needs its own token. gh reads GH_TOKEN.
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        # A single rolling "latest" release, overwritten on every push, so the
+        # one link people bookmark never changes. The versioned desktop-v0.1.x
+        # releases already in that repo are from the old Tauri build and are
+        # left alone; this only ever touches the "latest" tag.
+        run: |
+          REPO=CarlosAllberto/nimbus-desktop-releases
+          FILE=build/Build/Products/Release/Nimbus.zip
+          NOTES="Automatic build from CarlosAllberto/nimbus-desktop@${{ github.sha }}, built $(date -u +%Y-%m-%dT%H:%M:%SZ).
+
+          Unsigned: no Apple Developer ID on this build. If Gatekeeper blocks it, right-click Nimbus.app > Open, or allow it in System Settings > Privacy & Security."
+
+          if gh release view latest --repo "$REPO" >/dev/null 2>&1; then
+            gh release edit latest --repo "$REPO" --title "Nimbus (latest build)" --notes "$NOTES"
+          else
+            gh release create latest --repo "$REPO" --title "Nimbus (latest build)" --notes "$NOTES"
+          fi
+          gh release upload latest "$FILE" --repo "$REPO" --clobber
+      - name: Print download link
+        run: echo "Download -> https://github.com/CarlosAllberto/nimbus-desktop-releases/releases/download/latest/Nimbus.zip"
