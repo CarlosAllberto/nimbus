@@ -8,7 +8,7 @@ struct NimbusApp: App {
     @AppStorage("nimbusTheme") private var theme: NimbusTheme = .system
 
     var body: some Scene {
-        Window("", id: "main") {
+        Window("", id: "main") { 
             MainWindowView()
                 .preferredColorScheme(theme.colorScheme)
         }
@@ -145,6 +145,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
         pickColorItem.keyEquivalentModifierMask = PickColorShortcut.menuModifiers
         menu.addItem(.separator())
+        // Always visible, unlike `updateItem` above (which only shows once
+        // Sparkle's own background schedule has already found something on
+        // its own): this is the manual "check right now" path, showing
+        // Sparkle's usual dialog either way — a found update, or "you're up
+        // to date."
+        menu.addItem(withTitle: "Check for Updates…", action: #selector(checkForAppUpdates), keyEquivalent: "")
         menu.addItem(withTitle: "Preferences…", action: #selector(showPreferences), keyEquivalent: ",")
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Nimbus", action: #selector(quit), keyEquivalent: "q")
