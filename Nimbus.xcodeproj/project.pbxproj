@@ -1,7 +1,8 @@
 // !$*UTF8*$!
 {
 	archiveVersion = 1;
-	classes = {};
+	classes = {
+	};
 	objectVersion = 56;
 	objects = {
 
@@ -24,25 +25,25 @@
 		A10000000000000000000072 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000082 /* GlassBackground.swift */; };
 		A10000000000000000000073 /* QuickDropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000083 /* QuickDropView.swift */; };
 		A10000000000000000000090 /* SidecarProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000091 /* SidecarProcess.swift */; };
+		A10000000000000000000092 /* Sidecar in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000093 /* Sidecar */; };
 		A100000000000000000000A0 /* FormResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A1 /* FormResultView.swift */; };
 		A100000000000000000000A2 /* FormResultSliceA.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A3 /* FormResultSliceA.swift */; };
 		A100000000000000000000A4 /* FormResultSliceB.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A5 /* FormResultSliceB.swift */; };
 		A100000000000000000000B0 /* SpotlightNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B1 /* SpotlightNavigator.swift */; };
-A100000000000000000000B2 /* SpotlightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B3 /* SpotlightView.swift */; };
+		A100000000000000000000B2 /* SpotlightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B3 /* SpotlightView.swift */; };
 		A100000000000000000000B4 /* SpotlightPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B5 /* SpotlightPanel.swift */; };
+		A100000000000000000000C0 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C1 /* AuthSession.swift */; };
 		A100000000000000000000D0 /* SupabaseConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D1 /* SupabaseConfiguration.swift */; };
 		A100000000000000000000D2 /* SupabaseAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* SupabaseAuthClient.swift */; };
-		A100000000000000000000C0 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C1 /* AuthSession.swift */; };
+		A100000000000000000000D4 /* UsageQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D5 /* UsageQuota.swift */; };
 		A100000000000000000000E0 /* MainWindowOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* MainWindowOpener.swift */; };
 		A100000000000000000000F0 /* LoopbackAuthServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F1 /* LoopbackAuthServer.swift */; };
 		A100000000000000000000F2 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F3 /* AuthGateView.swift */; };
 		A100000000000000000000F4 /* ProviderBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F5 /* ProviderBrandMark.swift */; };
-		A100000000000000000000D4 /* UsageQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D5 /* UsageQuota.swift */; };
+		A100000000000000000000F6 /* Resources/AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F7 /* Resources/AppIcon.icns */; };
+		A100000000000000000000F8 /* Resources/TrayIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F9 /* Resources/TrayIcon.png */; };
 		A100000000000000000000FA /* NativeToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeToolView.swift */; };
 		A100000000000000000000FB /* Eyedropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FD /* Eyedropper.swift */; };
-		A10000000000000000000092 /* Sidecar in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000093 /* Sidecar */; };
-		A100000000000000000000F6 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F7 /* AppIcon.icns */; };
-		A100000000000000000000F8 /* TrayIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F9 /* TrayIcon.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,63 +67,274 @@ A100000000000000000000B2 /* SpotlightView.swift in Sources */ = {isa = PBXBuildF
 		A10000000000000000000082 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
 		A10000000000000000000083 /* QuickDropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDropView.swift; sourceTree = "<group>"; };
 		A10000000000000000000091 /* SidecarProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidecarProcess.swift; sourceTree = "<group>"; };
+		A10000000000000000000093 /* Sidecar */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sidecar; sourceTree = "<group>"; };
 		A100000000000000000000A1 /* FormResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultView.swift; sourceTree = "<group>"; };
 		A100000000000000000000A3 /* FormResultSliceA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceA.swift; sourceTree = "<group>"; };
 		A100000000000000000000A5 /* FormResultSliceB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceB.swift; sourceTree = "<group>"; };
 		A100000000000000000000B1 /* SpotlightNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightNavigator.swift; sourceTree = "<group>"; };
 		A100000000000000000000B3 /* SpotlightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightView.swift; sourceTree = "<group>"; };
-		A100000000000000000000C1 /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
 		A100000000000000000000B5 /* SpotlightPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightPanel.swift; sourceTree = "<group>"; };
+		A100000000000000000000C1 /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
 		A100000000000000000000D1 /* SupabaseConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfiguration.swift; sourceTree = "<group>"; };
 		A100000000000000000000D3 /* SupabaseAuthClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthClient.swift; sourceTree = "<group>"; };
+		A100000000000000000000D5 /* UsageQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageQuota.swift; sourceTree = "<group>"; };
 		A100000000000000000000E1 /* MainWindowOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowOpener.swift; sourceTree = "<group>"; };
 		A100000000000000000000F1 /* LoopbackAuthServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopbackAuthServer.swift; sourceTree = "<group>"; };
 		A100000000000000000000F3 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
 		A100000000000000000000F5 /* ProviderBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderBrandMark.swift; sourceTree = "<group>"; };
-		A100000000000000000000F7 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Resources/AppIcon.icns; sourceTree = "<group>"; };
-		A100000000000000000000F9 /* TrayIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Resources/TrayIcon.png; sourceTree = "<group>"; };
-		A100000000000000000000D5 /* UsageQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageQuota.swift; sourceTree = "<group>"; };
+		A100000000000000000000F7 /* Resources/AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Resources/AppIcon.icns; sourceTree = "<group>"; };
+		A100000000000000000000F9 /* Resources/TrayIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Resources/TrayIcon.png; sourceTree = "<group>"; };
 		A100000000000000000000FC /* NativeToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeToolView.swift; sourceTree = "<group>"; };
 		A100000000000000000000FD /* Eyedropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Eyedropper.swift; sourceTree = "<group>"; };
-		A10000000000000000000093 /* Sidecar */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sidecar; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A10000000000000000000020 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A10000000000000000000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A10000000000000000000030 = {isa = PBXGroup; children = (A10000000000000000000031, A10000000000000000000093, A10000000000000000000032); sourceTree = "<group>"; };
-		A10000000000000000000031 /* Nimbus */ = {isa = PBXGroup; children = (A10000000000000000000011, A10000000000000000000012, A10000000000000000000013, A10000000000000000000014, A10000000000000000000015, A10000000000000000000016, A10000000000000000000017, A10000000000000000000018, A10000000000000000000019, A1000000000000000000001A, A1000000000000000000001B, A1000000000000000000001C, A1000000000000000000001D, A1000000000000000000001E, A10000000000000000000080, A10000000000000000000081, A10000000000000000000082, A10000000000000000000083, A10000000000000000000091, A100000000000000000000A1, A100000000000000000000A3, A100000000000000000000A5, A100000000000000000000B1, A100000000000000000000B3, A100000000000000000000B5, A100000000000000000000C1, A100000000000000000000D1, A100000000000000000000D3, A100000000000000000000D5, A100000000000000000000E1, A100000000000000000000F1, A100000000000000000000F3, A100000000000000000000F5, A100000000000000000000FC, A100000000000000000000FD, A100000000000000000000F7, A100000000000000000000F9); path = Sources/Nimbus; sourceTree = "<group>"; };
-		A10000000000000000000032 /* Products */ = {isa = PBXGroup; children = (A10000000000000000000010); name = Products; sourceTree = "<group>"; };
+		A10000000000000000000030 = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000031 /* Sources/Nimbus */,
+				A10000000000000000000093 /* Sidecar */,
+				A10000000000000000000032 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000000000000000000031 /* Sources/Nimbus */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000011 /* NimbusApp.swift */,
+				A10000000000000000000012 /* MainWindowView.swift */,
+				A10000000000000000000013 /* PreferencesView.swift */,
+				A10000000000000000000014 /* ToolCatalog.swift */,
+				A10000000000000000000015 /* Info.plist */,
+				A10000000000000000000016 /* NimbusAPI.swift */,
+				A10000000000000000000017 /* FileToolView.swift */,
+				A10000000000000000000018 /* FileAcceptance.swift */,
+				A10000000000000000000019 /* FormToolConfiguration.swift */,
+				A1000000000000000000001A /* FormControls.swift */,
+				A1000000000000000000001B /* FormToolView.swift */,
+				A1000000000000000000001C /* FormFieldsSliceA.swift */,
+				A1000000000000000000001D /* FormFieldsSliceB.swift */,
+				A1000000000000000000001E /* FileThumbnailImage.swift */,
+				A10000000000000000000080 /* GlobalHotKey.swift */,
+				A10000000000000000000081 /* QuickDropPanel.swift */,
+				A10000000000000000000082 /* GlassBackground.swift */,
+				A10000000000000000000083 /* QuickDropView.swift */,
+				A10000000000000000000091 /* SidecarProcess.swift */,
+				A100000000000000000000A1 /* FormResultView.swift */,
+				A100000000000000000000A3 /* FormResultSliceA.swift */,
+				A100000000000000000000A5 /* FormResultSliceB.swift */,
+				A100000000000000000000B1 /* SpotlightNavigator.swift */,
+				A100000000000000000000B3 /* SpotlightView.swift */,
+				A100000000000000000000B5 /* SpotlightPanel.swift */,
+				A100000000000000000000C1 /* AuthSession.swift */,
+				A100000000000000000000D1 /* SupabaseConfiguration.swift */,
+				A100000000000000000000D3 /* SupabaseAuthClient.swift */,
+				A100000000000000000000D5 /* UsageQuota.swift */,
+				A100000000000000000000E1 /* MainWindowOpener.swift */,
+				A100000000000000000000F1 /* LoopbackAuthServer.swift */,
+				A100000000000000000000F3 /* AuthGateView.swift */,
+				A100000000000000000000F5 /* ProviderBrandMark.swift */,
+				A100000000000000000000FC /* NativeToolView.swift */,
+				A100000000000000000000FD /* Eyedropper.swift */,
+				A100000000000000000000F7 /* Resources/AppIcon.icns */,
+				A100000000000000000000F9 /* Resources/TrayIcon.png */,
+			);
+			path = Sources/Nimbus;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000032 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000010 /* Nimbus.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A10000000000000000000040 /* Nimbus */ = {isa = PBXNativeTarget; buildConfigurationList = A10000000000000000000050; buildPhases = (A10000000000000000000043, A10000000000000000000020, A10000000000000000000042); buildRules = (); dependencies = (); name = Nimbus; productName = Nimbus; productReference = A10000000000000000000010; productType = "com.apple.product-type.application"; };
+		A10000000000000000000040 /* Nimbus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000050 /* Build configuration list for PBXNativeTarget "Nimbus" */;
+			buildPhases = (
+				A10000000000000000000043 /* Sources */,
+				A10000000000000000000020 /* Frameworks */,
+				A10000000000000000000042 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Nimbus;
+			productName = Nimbus;
+			productReference = A10000000000000000000010 /* Nimbus.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A10000000000000000000041 /* Project object */ = {isa = PBXProject; attributes = {LastUpgradeCheck = 2660; TargetAttributes = {A10000000000000000000040 = {CreatedOnToolsVersion = 26.0; }; }; }; buildConfigurationList = A10000000000000000000051; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A10000000000000000000030; productRefGroup = A10000000000000000000032; projectDirPath = ""; projectRoot = ""; targets = (A10000000000000000000040); };
+		A10000000000000000000041 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					A10000000000000000000040 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = A10000000000000000000051 /* Build configuration list for PBXProject "Nimbus" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000000000000000000030;
+			productRefGroup = A10000000000000000000032 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10000000000000000000040 /* Nimbus */,
+			);
+		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A10000000000000000000042 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000092, A100000000000000000000F6, A100000000000000000000F8); runOnlyForDeploymentPostprocessing = 0; };
+		A10000000000000000000042 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000092 /* Sidecar in Resources */,
+				A100000000000000000000F6 /* Resources/AppIcon.icns in Resources */,
+				A100000000000000000000F8 /* Resources/TrayIcon.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A10000000000000000000043 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, A10000000000000000000009, A1000000000000000000000A, A1000000000000000000000B, A1000000000000000000000C, A1000000000000000000000D, A1000000000000000000000E, A10000000000000000000070, A10000000000000000000071, A10000000000000000000072, A10000000000000000000073, A10000000000000000000090, A100000000000000000000A0, A100000000000000000000A2, A100000000000000000000A4, A100000000000000000000B0, A100000000000000000000B2, A100000000000000000000B4, A100000000000000000000C0, A100000000000000000000D0, A100000000000000000000D2, A100000000000000000000E0, A100000000000000000000F0, A100000000000000000000F2, A100000000000000000000F4, A100000000000000000000D4, A100000000000000000000FA, A100000000000000000000FB); runOnlyForDeploymentPostprocessing = 0; };
+		A10000000000000000000043 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* NimbusApp.swift in Sources */,
+				A10000000000000000000002 /* MainWindowView.swift in Sources */,
+				A10000000000000000000003 /* PreferencesView.swift in Sources */,
+				A10000000000000000000004 /* ToolCatalog.swift in Sources */,
+				A10000000000000000000006 /* NimbusAPI.swift in Sources */,
+				A10000000000000000000007 /* FileToolView.swift in Sources */,
+				A10000000000000000000008 /* FileAcceptance.swift in Sources */,
+				A10000000000000000000009 /* FormToolConfiguration.swift in Sources */,
+				A1000000000000000000000A /* FormControls.swift in Sources */,
+				A1000000000000000000000B /* FormToolView.swift in Sources */,
+				A1000000000000000000000C /* FormFieldsSliceA.swift in Sources */,
+				A1000000000000000000000D /* FormFieldsSliceB.swift in Sources */,
+				A1000000000000000000000E /* FileThumbnailImage.swift in Sources */,
+				A10000000000000000000070 /* GlobalHotKey.swift in Sources */,
+				A10000000000000000000071 /* QuickDropPanel.swift in Sources */,
+				A10000000000000000000072 /* GlassBackground.swift in Sources */,
+				A10000000000000000000073 /* QuickDropView.swift in Sources */,
+				A10000000000000000000090 /* SidecarProcess.swift in Sources */,
+				A100000000000000000000A0 /* FormResultView.swift in Sources */,
+				A100000000000000000000A2 /* FormResultSliceA.swift in Sources */,
+				A100000000000000000000A4 /* FormResultSliceB.swift in Sources */,
+				A100000000000000000000B0 /* SpotlightNavigator.swift in Sources */,
+				A100000000000000000000B2 /* SpotlightView.swift in Sources */,
+				A100000000000000000000B4 /* SpotlightPanel.swift in Sources */,
+				A100000000000000000000C0 /* AuthSession.swift in Sources */,
+				A100000000000000000000D0 /* SupabaseConfiguration.swift in Sources */,
+				A100000000000000000000D2 /* SupabaseAuthClient.swift in Sources */,
+				A100000000000000000000E0 /* MainWindowOpener.swift in Sources */,
+				A100000000000000000000F0 /* LoopbackAuthServer.swift in Sources */,
+				A100000000000000000000F2 /* AuthGateView.swift in Sources */,
+				A100000000000000000000F4 /* ProviderBrandMark.swift in Sources */,
+				A100000000000000000000D4 /* UsageQuota.swift in Sources */,
+				A100000000000000000000FA /* NativeToolView.swift in Sources */,
+				A100000000000000000000FB /* Eyedropper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		A10000000000000000000060 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; CODE_SIGNING_ALLOWED = NO; INFOPLIST_FILE = Sources/Nimbus/Info.plist; MACOSX_DEPLOYMENT_TARGET = 14.0; PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus; PRODUCT_NAME = Nimbus; SDKROOT = macosx; SWIFT_VERSION = 5.0; }; name = Debug; };
-		A10000000000000000000061 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; INFOPLIST_FILE = Sources/Nimbus/Info.plist; MACOSX_DEPLOYMENT_TARGET = 14.0; PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus; PRODUCT_NAME = Nimbus; SDKROOT = macosx; SWIFT_VERSION = 5.0; }; name = Release; };
-		A10000000000000000000062 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; SWIFT_VERSION = 5.0; }; name = Debug; };
-		A10000000000000000000063 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; SWIFT_VERSION = 5.0; }; name = Release; };
+		A10000000000000000000060 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				INFOPLIST_FILE = Sources/Nimbus/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus;
+				PRODUCT_NAME = Nimbus;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10000000000000000000061 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				INFOPLIST_FILE = Sources/Nimbus/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus;
+				PRODUCT_NAME = Nimbus;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A10000000000000000000062 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10000000000000000000063 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A10000000000000000000050 = {isa = XCConfigurationList; buildConfigurations = (A10000000000000000000060, A10000000000000000000061); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-		A10000000000000000000051 = {isa = XCConfigurationList; buildConfigurations = (A10000000000000000000062, A10000000000000000000063); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A10000000000000000000050 /* Build configuration list for PBXNativeTarget "Nimbus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000060 /* Debug */,
+				A10000000000000000000061 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000051 /* Build configuration list for PBXProject "Nimbus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000062 /* Debug */,
+				A10000000000000000000063 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 	};
 	rootObject = A10000000000000000000041 /* Project object */;
