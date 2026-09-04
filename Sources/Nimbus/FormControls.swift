@@ -453,11 +453,22 @@ struct LinkRow: View {
     var body: some View {
         HStack(spacing: 10) {
             if let url = URL(string: urlString) {
-                Link(urlString, destination: url)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                // The label has to be an explicit `Text` for these to apply.
+                // Attached to the `Link` itself they used to work, but under
+                // the macOS 26 SDK they stop reaching the label it generates
+                // from a string, and a long link wraps to a second, indented
+                // line instead of truncating — which reads as a broken layout.
+                // Middle truncation keeps both the domain and the tail
+                // visible; Copy still carries the whole thing.
+                Link(destination: url) {
+                    Text(urlString)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             } else {
                 Text(urlString)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
             Spacer(minLength: 0)
             CopyButton(text: urlString)
