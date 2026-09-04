@@ -165,20 +165,26 @@ struct QuickDropView: View {
             // Drop's four wells were a free side door around the daily limit
             // — they called the sidecar directly and never touched
             // `UsageQuota` at all.
+            // All four wells are file tools, so this is always true today —
+            // asked rather than assumed so the rule lives in one place.
+            let isMetered = UsageQuota.isMetered(toolID: tool.id)
+
             fileLoop: for (index, sourceURL) in sourceURLs.enumerated() {
                 var consumedCurrentFile = false
-                switch await UsageQuota.checkAndConsume() {
-                case let .allowed(consumed):
-                    consumedCurrentFile = consumed
-                case let .blocked(message):
-                    // Every row from here on never got a chance to run —
-                    // same "shares one reason" treatment as the sidecar-down
-                    // catch below.
-                    let indices = run?.items.indices ?? (0..<0)
-                    for remainingIndex in indices where remainingIndex >= index {
-                        withAnimation(.snappy) { run?.items[remainingIndex].status = .failed(message) }
+                if isMetered {
+                    switch await UsageQuota.checkAndConsume() {
+                    case let .allowed(consumed):
+                        consumedCurrentFile = consumed
+                    case let .blocked(message):
+                        // Every row from here on never got a chance to run —
+                        // same "shares one reason" treatment as the sidecar-down
+                        // catch below.
+                        let indices = run?.items.indices ?? (0..<0)
+                        for remainingIndex in indices where remainingIndex >= index {
+                            withAnimation(.snappy) { run?.items[remainingIndex].status = .failed(message) }
+                        }
+                        break fileLoop
                     }
-                    break fileLoop
                 }
 
                 do {

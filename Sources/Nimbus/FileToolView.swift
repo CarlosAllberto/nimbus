@@ -462,14 +462,20 @@ struct FileToolView: View {
             let fields = requestFields ?? [:]
             let extras = try extraFiles()
 
+            // Every file tool is metered (see `UsageQuota.isMetered`), but
+            // asking rather than assuming keeps the rule in one place.
+            let isMetered = UsageQuota.isMetered(toolID: tool.id)
+
             fileLoop: for sourceURL in sources {
-                switch await UsageQuota.checkAndConsume() {
-                case let .allowed(consumed):
-                    consumedCurrentFile = consumed
-                case let .blocked(message):
-                    quotaBlockedMessage = message
-                    cancelled = true
-                    break fileLoop
+                if isMetered {
+                    switch await UsageQuota.checkAndConsume() {
+                    case let .allowed(consumed):
+                        consumedCurrentFile = consumed
+                    case let .blocked(message):
+                        quotaBlockedMessage = message
+                        cancelled = true
+                        break fileLoop
+                    }
                 }
 
                 withAnimation(motion) { fileStatuses[sourceURL] = .processing }

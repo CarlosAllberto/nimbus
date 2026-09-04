@@ -55,6 +55,29 @@ enum UsageQuota {
 
     static let upgradeURL = URL(string: "https://www.nimbushelp.com/#pricing")!
 
+    /// Whether running this tool costs one of the day's uses. The one place
+    /// that answers it, so the three call sites (`FileToolView`,
+    /// `FormToolView`, `QuickDropView`) can't drift apart on what counts.
+    ///
+    /// Two things are metered, and both are things a run actually costs
+    /// something to do: anything that pushes a file through the sidecar, and
+    /// the two tools that call Gemini (Contract PDF and Copy Generator — the
+    /// only two, verified against `Sidecar/tools`). Everything else is a
+    /// local, instant conversion or lookup — Pick Color, Responsive Font
+    /// Clamp, Password Generator, the colour tools — and those are the ones
+    /// people reach for a dozen times an hour, so charging a use for them
+    /// only makes the app annoying without saving anything.
+    ///
+    /// Deliberately derived rather than a hardcoded list of ids: a new file
+    /// tool is metered the moment it exists, which is the right default,
+    /// while a new lightweight form tool stays free unless someone says
+    /// otherwise here.
+    static func isMetered(toolID: String) -> Bool {
+        if FileToolConfiguration.configuration(for: toolID) != nil { return true }
+        return toolID == FormToolKind.contractPDF.rawValue
+            || toolID == FormToolKind.copyGenerator.rawValue
+    }
+
     /// Chamado uma vez por unidade a consumir (1x por execucao de form
     /// tool, 1x por arquivo de file tool — ver feature-spec). Falha
     /// ABERTA em qualquer problema pra sequer completar o check — ver

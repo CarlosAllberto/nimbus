@@ -194,13 +194,19 @@ struct FormToolView: View {
         isProcessing = true
         defer { isProcessing = false }
 
+        // Most form tools are local, instant conversions and don't cost a
+        // use at all — see `UsageQuota.isMetered`.
         let consumedUnit: Bool
-        switch await UsageQuota.checkAndConsume() {
-        case let .allowed(consumed):
-            consumedUnit = consumed
-        case let .blocked(message):
-            quotaBlockedMessage = message
-            return
+        if UsageQuota.isMetered(toolID: tool.id) {
+            switch await UsageQuota.checkAndConsume() {
+            case let .allowed(consumed):
+                consumedUnit = consumed
+            case let .blocked(message):
+                quotaBlockedMessage = message
+                return
+            }
+        } else {
+            consumedUnit = false
         }
 
         do {
