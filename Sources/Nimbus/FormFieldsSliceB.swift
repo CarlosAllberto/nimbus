@@ -18,6 +18,10 @@ struct FormFieldsSliceB: View {
     @Binding var canSubmit: Bool
     @Binding var fields: [String: String]
     @Binding var files: [String: URL]
+    /// See `FormFieldsSliceA` — same contract: which step to draw, and one
+    /// validity flag per step for the shell's "Next" button.
+    var step: Int = 0
+    @Binding var stepValidity: [Bool]
 
     // Password Generator
     @State private var passwordBase = ""
@@ -352,33 +356,38 @@ struct FormFieldsSliceB: View {
 
     private var copyGeneratorFields: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Toggle("Use Briefing File", isOn: $useBriefingFile.animation(.snappy))
-                .accessibilityLabel("Use briefing file")
-            // The briefing file and the written description are two ways of saying the
-            // same thing, so exactly one of them is on screen at a time.
-            if useBriefingFile {
-                FormRow(label: "Briefing File") {
-                    CompactFileField(label: "Briefing File", acceptance: .document, url: $briefingFileURL)
-                }
-            } else {
-                FormRow(label: "Site Description") {
-                    proseEditor($siteDescription, label: "Site description", placeholder: "What the site is about, who it is for, and the tone of voice it should use", minHeight: 100)
-                }
-            }
-            FormRow(label: "Pages") {
-                DynamicList(addLabel: "Add Page", items: $copyPages, newItem: { CopyPageItem() }) { $item, index in
-                    VStack(alignment: .leading, spacing: 6) {
-                        TextField("Page Title", text: $item.title)
-                            .formFieldChrome()
-                            .accessibilityLabel("Page \(index + 1) title")
-                        TextField("Hero, Pricing, FAQ", text: $item.sections)
-                            .formFieldChrome()
-                            .accessibilityLabel("Page \(index + 1) sections")
+            switch step {
+            case 0:
+                Toggle("Use Briefing File", isOn: $useBriefingFile.animation(.snappy))
+                    .accessibilityLabel("Use briefing file")
+                // The briefing file and the written description are two ways of saying the
+                // same thing, so exactly one of them is on screen at a time.
+                if useBriefingFile {
+                    FormRow(label: "Briefing File") {
+                        CompactFileField(label: "Briefing File", acceptance: .document, url: $briefingFileURL)
+                    }
+                } else {
+                    FormRow(label: "Site Description") {
+                        proseEditor($siteDescription, label: "Site description", placeholder: "What the site is about, who it is for, and the tone of voice it should use", minHeight: 100)
                     }
                 }
-            }
-            FormRow(label: "Additional Notes", isOptional: true) {
-                proseEditor($additionalNotes, label: "Additional notes", placeholder: "Anything else the copy should take into account", minHeight: 70)
+            case 1:
+                FormRow(label: "Pages") {
+                    DynamicList(addLabel: "Add Page", items: $copyPages, newItem: { CopyPageItem() }) { $item, index in
+                        VStack(alignment: .leading, spacing: 6) {
+                            TextField("Page Title", text: $item.title)
+                                .formFieldChrome()
+                                .accessibilityLabel("Page \(index + 1) title")
+                            TextField("Hero, Pricing, FAQ", text: $item.sections)
+                                .formFieldChrome()
+                                .accessibilityLabel("Page \(index + 1) sections")
+                        }
+                    }
+                }
+            default:
+                FormRow(label: "Additional Notes", isOptional: true) {
+                    proseEditor($additionalNotes, label: "Additional notes", placeholder: "Anything else the copy should take into account", minHeight: 70)
+                }
             }
         }
         .task { updateCopyGeneratorCanSubmit() }
@@ -396,6 +405,11 @@ struct FormFieldsSliceB: View {
         }
         let briefingProvided = useBriefingFile ? briefingFileURL != nil : descriptionFilled
         canSubmit = briefingProvided && hasNamedPage
+
+        // Same order as `FormToolKind.steps`. Notes are optional, so that
+        // step is always passable — it just can't be skipped past, since
+        // it's the last one and carries the action button.
+        stepValidity = [briefingProvided, hasNamedPage, true]
 
         files["file"] = useBriefingFile ? briefingFileURL : nil
         fields["siteDescription"] = siteDescription

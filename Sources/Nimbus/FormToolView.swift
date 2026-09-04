@@ -14,6 +14,18 @@ struct FormToolView: View {
     @State private var result: FormRunResult?
     @State private var runTask: Task<Void, Never>?
     @State private var quotaBlockedMessage: String?
+    @State private var currentStep = 0
+    @State private var stepValidity: [Bool] = []
+
+    /// nil for every form short enough to stay on one page — which is all of
+    /// them but Contract PDF and Copy Generator.
+    private var steps: [String]? { configuration.kind.steps }
+    private var isLastStep: Bool { currentStep >= (steps?.count ?? 1) - 1 }
+    /// Unreached steps report false, so "Next" stays disabled until the step
+    /// on screen is actually filled in.
+    private var currentStepIsValid: Bool {
+        stepValidity.indices.contains(currentStep) ? stepValidity[currentStep] : false
+    }
 
     private let focusRingInset: CGFloat = 4
 
@@ -27,8 +39,17 @@ struct FormToolView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(tool.name)
                     .font(.title.bold())
-                Text(tool.summary)
-                    .foregroundStyle(.secondary)
+                // The step line replaces the summary rather than stacking
+                // under it: once someone is three steps into a form, which
+                // step they're on is the more useful of the two, and the
+                // summary has already done its job.
+                if let steps, result == nil {
+                    Text("Step \(currentStep + 1) of \(steps.count) · \(steps[currentStep])")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(tool.summary)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.leading, isSidebarVisible ? 0 : 52)
             .padding(.horizontal, focusRingInset)
@@ -96,12 +117,30 @@ struct FormToolView: View {
                         .help("Action")
                         .disabled(isProcessing)
                     }
-                    Button(configuration.actionTitle) {
-                        runTask = Task { await runTool() }
+                    if steps != nil && currentStep > 0 {
+                        Button("Back") {
+                            withAnimation(.snappy) { currentStep -= 1 }
+                        }
+                        .disabled(isProcessing)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(!canSubmit || isProcessing)
+                    // The action button only exists on the last step, so
+                    // there's never a moment where both "Next" and "run this"
+                    // are on screen competing for the same Return key.
+                    if steps != nil && !isLastStep {
+                        Button("Next") {
+                            withAnimation(.snappy) { currentStep += 1 }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(!currentStepIsValid)
+                    } else {
+                        Button(configuration.actionTitle) {
+                            runTask = Task { await runTool() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(!canSubmit || isProcessing)
+                    }
                 }
             }
             .padding(.horizontal, focusRingInset)
@@ -138,9 +177,15 @@ struct FormToolView: View {
     private var fieldsForSlice: some View {
         switch configuration.kind.slice {
         case .sliceA:
-            FormFieldsSliceA(kind: configuration.kind, canSubmit: $canSubmit, fields: $fields, files: $files)
+            FormFieldsSliceA(
+                kind: configuration.kind, canSubmit: $canSubmit, fields: $fields, files: $files,
+                step: currentStep, stepValidity: $stepValidity
+            )
         case .sliceB:
-            FormFieldsSliceB(kind: configuration.kind, canSubmit: $canSubmit, fields: $fields, files: $files)
+            FormFieldsSliceB(
+                kind: configuration.kind, canSubmit: $canSubmit, fields: $fields, files: $files,
+                step: currentStep, stepValidity: $stepValidity
+            )
         }
     }
 

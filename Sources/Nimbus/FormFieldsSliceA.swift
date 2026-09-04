@@ -5,6 +5,15 @@ struct FormFieldsSliceA: View {
     @Binding var canSubmit: Bool
     @Binding var fields: [String: String]
     @Binding var files: [String: URL]
+    /// Which step to render, for the tools `FormToolKind.steps` splits up.
+    /// Always 0 for the single-page forms, which ignore it entirely.
+    var step: Int = 0
+    /// One flag per step, so the shell knows whether "Next" can be enabled.
+    /// Written by the same `update…State()` that already computes
+    /// `canSubmit`, since it reads every field regardless of which step is
+    /// on screen — a step the user hasn't reached yet is simply not valid
+    /// yet, which is exactly the answer wanted.
+    @Binding var stepValidity: [Bool]
 
     // WHOIS Scan
     @State private var domain = ""
@@ -222,11 +231,13 @@ struct FormFieldsSliceA: View {
     @ViewBuilder
     private var contractPDFFields: some View {
         VStack(alignment: .leading, spacing: 14) {
-            contractPDFClientSection
-            contractPDFContractorSection
-            contractPDFVenueSection
-            contractPDFServiceSection
-            contractPDFSignatureSection
+            switch step {
+            case 0: contractPDFClientSection
+            case 1: contractPDFContractorSection
+            case 2: contractPDFVenueSection
+            case 3: contractPDFServiceSection
+            default: contractPDFSignatureSection
+            }
         }
         .task { updateContractPDFState() }
     }
@@ -371,6 +382,18 @@ struct FormFieldsSliceA: View {
         ]
         let allTextFilled = textFields.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         canSubmit = allTextFilled && serviceTermWeeks > 0 && serviceValue > 0
+
+        func filled(_ values: String...) -> Bool {
+            values.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        }
+        // Same order as `FormToolKind.steps`.
+        stepValidity = [
+            filled(clientName, clientCPF, clientEmail, clientPhone, clientAddress),
+            filled(contractorCompanyName, contractorCNPJ, contractorAddress),
+            filled(venueCity, venueState),
+            filled(serviceDescription) && serviceTermWeeks > 0 && serviceValue > 0,
+            filled(signaturePlaceDate, signatory1, signatory2)
+        ]
 
         let contractFields = ContractPDFFields(
             nome: clientName, cpf: clientCPF, email: clientEmail, telefone: clientPhone, endereco: clientAddress,

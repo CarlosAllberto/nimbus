@@ -44,6 +44,24 @@ enum FormToolKind: String, CaseIterable {
     /// inside a scroll view.
     var isMinifyTool: Bool { self == .htmlMinify || self == .jsMinify }
 
+    /// Titles of the steps a long form is broken into, or nil for the forms
+    /// short enough to stay on one page. Declared here, beside the rest of
+    /// what varies per tool, so the slices only have to answer "render step
+    /// N" — they never decide how many there are.
+    ///
+    /// Copy Generator's briefing file and written description are one step,
+    /// not two: the toggle swaps between them, so splitting them would leave
+    /// whichever is off showing an empty step.
+    var steps: [String]? {
+        switch self {
+        case .contractPDF:
+            ["Client", "Contractor", "Venue", "Service", "Signature"]
+        case .copyGenerator:
+            ["Briefing", "Pages", "Notes"]
+        default:
+            nil
+        }
+    }
 }
 
 struct FormToolConfiguration: Equatable {
