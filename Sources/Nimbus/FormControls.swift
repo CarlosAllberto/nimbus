@@ -270,12 +270,33 @@ struct CopyButton: View {
     let text: String
     var label: String = "Copy"
     @State private var didCopy = false
+    /// Bumped on every press so `task(id:)` restarts the timer even while the
+    /// button is already showing "Copied" — without it the label sticks on the
+    /// first press and the button reads as copy-once.
+    @State private var presses = 0
 
     var body: some View {
-        Button(didCopy ? "Copied" : label) {
+        Button {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
+            presses += 1
             withAnimation(.snappy) { didCopy = true }
+        } label: {
+            // Both labels are laid out, so the button is always as wide as the
+            // longer of the two and swapping them resizes nothing. Sizing to
+            // whichever string is showing would make the button — and anything
+            // sharing its row — jump sideways mid-press.
+            ZStack {
+                Text(label).hidden()
+                Text("Copied").hidden()
+                Text(didCopy ? "Copied" : label)
+            }
+        }
+        .task(id: presses) {
+            guard presses > 0 else { return }
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            withAnimation(.snappy) { didCopy = false }
         }
     }
 }

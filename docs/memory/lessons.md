@@ -491,3 +491,22 @@ rule, promote it to [rules.md](rules.md).
   was answered by reading the function in the database: it floors at zero and
   filters to free/basic, so it is a no-op there. Both were reported as findings
   rather than assumptions, which is what made them cheap to settle.
+
+### 2026-09-04 — A "Copied" label that never resets reads as copy-once
+
+- **Problem:** the WhatsApp Link copy button appeared to work only once —
+  after the first press it stayed on "Copied" forever.
+- **Cause:** `CopyButton` (FormControls.swift) set `didCopy = true` and had
+  nothing that ever set it back. The pasteboard write kept working on every
+  press; only the label was stuck, and a stuck label is indistinguishable from
+  a dead button.
+- **Rule:** any state flipped to signal "just happened" needs the code that
+  flips it back written in the same change. Here: `.task(id: presses)` sleeps
+  ~1.5s then clears it, keyed on a press counter so repeat presses restart the
+  timer instead of being swallowed while the flag is already true.
+- **Context:** `FileToolView`'s `copiedHex` is a different affordance — it
+  names *which* value was copied and is meant to persist — so it was left
+  alone. Second half of the same fix: a button whose label swaps also has to
+  keep its width, or the row jumps sideways mid-press. Lay both strings out in
+  a `ZStack` with the inactive one `.hidden()` so the frame is the wider of the
+  two regardless of which is showing.
