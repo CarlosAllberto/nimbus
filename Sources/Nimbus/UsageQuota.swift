@@ -59,23 +59,26 @@ enum UsageQuota {
     /// that answers it, so the three call sites (`FileToolView`,
     /// `FormToolView`, `QuickDropView`) can't drift apart on what counts.
     ///
-    /// Two things are metered, and both are things a run actually costs
-    /// something to do: anything that pushes a file through the sidecar, and
-    /// the two tools that call Gemini (Contract PDF and Copy Generator — the
-    /// only two, verified against `Sidecar/tools`). Everything else is a
-    /// local, instant conversion or lookup — Pick Color, Responsive Font
-    /// Clamp, Password Generator, the colour tools — and those are the ones
-    /// people reach for a dozen times an hour, so charging a use for them
-    /// only makes the app annoying without saving anything.
+    /// A run is metered when it either hands back an artifact to keep or
+    /// calls out to AI. Every file tool qualifies on the first count; among
+    /// the form tools, QR Code returns a PNG/SVG and Contract PDF a PDF,
+    /// while Contract PDF and Copy Generator are also the only two that
+    /// reach Gemini (verified against `Sidecar/tools`).
     ///
-    /// Deliberately derived rather than a hardcoded list of ids: a new file
-    /// tool is metered the moment it exists, which is the right default,
-    /// while a new lightweight form tool stays free unless someone says
-    /// otherwise here.
+    /// Everything else is a local, instant conversion or lookup whose answer
+    /// just appears in the panel — Pick Color, Responsive Font Clamp,
+    /// Password Generator, the colour tools. Those are the ones people reach
+    /// for a dozen times an hour, and charging a use for them only made the
+    /// app annoying without saving anything.
+    ///
+    /// The file half is derived rather than listed, so a new file tool is
+    /// metered the moment it exists — the right default, since that's the
+    /// expensive shape. The form half is named explicitly: a new form tool
+    /// stays free until someone decides it shouldn't be.
     static func isMetered(toolID: String) -> Bool {
         if FileToolConfiguration.configuration(for: toolID) != nil { return true }
-        return toolID == FormToolKind.contractPDF.rawValue
-            || toolID == FormToolKind.copyGenerator.rawValue
+        return [FormToolKind.contractPDF, .copyGenerator, .qrCode]
+            .contains { $0.rawValue == toolID }
     }
 
     /// Chamado uma vez por unidade a consumir (1x por execucao de form
