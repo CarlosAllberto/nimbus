@@ -63,7 +63,12 @@ struct FormFieldsSliceB: View {
     @State private var useBriefingFile = false
     @State private var briefingFileURL: URL?
     @State private var siteDescription = ""
-    @State private var copyPages: [CopyPageItem] = []
+    /// Starts with one blank page rather than an empty list: the Pages step
+    /// is otherwise just an "Add Page" link with nothing above it, which
+    /// reads as an empty step rather than as a form to fill in. It stays
+    /// removable, and a blank title still fails validation, so this only
+    /// changes what the step looks like on arrival.
+    @State private var copyPages: [CopyPageItem] = [CopyPageItem()]
     @State private var additionalNotes = ""
 
     var body: some View {
