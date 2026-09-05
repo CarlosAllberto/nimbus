@@ -57,7 +57,10 @@ enum ToolCatalog {
         NimbusTool(id: "contract-pdf", name: "Contract PDF", summary: "Create a contract PDF.", icon: "doc.richtext", group: .tools),
         NimbusTool(id: "qrcode", name: "QR Code", summary: "Create a QR code.", icon: "qrcode", group: .tools),
         NimbusTool(id: "font-convert", name: "Font Convert", summary: "Convert a font file.", icon: "textformat", group: .tools),
-        NimbusTool(id: "pick-color", name: "Pick Color", summary: "Sample any color on screen.", icon: "eyedropper", group: .tools),
+        // Hidden for now — the custom ScreenCaptureKit eyedropper needs Screen
+        // Recording permission; the menu item and global shortcut use the
+        // system color sampler instead (see NimbusApp.pickColorAndCopy).
+        // NimbusTool(id: "pick-color", name: "Pick Color", summary: "Sample any color on screen.", icon: "eyedropper", group: .tools),
     ]
 }
 

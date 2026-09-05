@@ -352,15 +352,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// opens; the pick just lands straight on the clipboard. Silently no-ops
     /// if Screen Recording access isn't granted or a pick is already in
     /// progress (`start` itself guards both).
+    // Uses the system color sampler instead of the custom ScreenCaptureKit
+    // eyedropper — no Screen Recording permission needed, so the menu item
+    // and global shortcut both work immediately after install.
     @objc private func pickColorAndCopy() {
-        EyedropperController.shared.start(
-            onPick: { color in
+        NSColorSampler().show { color in
+            guard let color else { return }
+            MainActor.assumeIsolated {
                 let pasteboard = NSPasteboard.general
                 pasteboard.clearContents()
                 pasteboard.setString(EyedropperController.hexString(for: color), forType: .string)
-            },
-            onCancel: {}
-        )
+            }
+        }
     }
 
     /// `showSettingsWindow:` is the selector SwiftUI's `Settings` scene
