@@ -56,6 +56,7 @@
 		A10000000000000000000013 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000014 /* ToolCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCatalog.swift; sourceTree = "<group>"; };
 		A10000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000110 /* Nimbus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nimbus.entitlements; sourceTree = "<group>"; };
 		A10000000000000000000016 /* NimbusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NimbusAPI.swift; sourceTree = "<group>"; };
 		A10000000000000000000017 /* FileToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileToolView.swift; sourceTree = "<group>"; };
 		A10000000000000000000018 /* FileAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileAcceptance.swift; sourceTree = "<group>"; };
@@ -122,6 +123,7 @@
 				A10000000000000000000013 /* PreferencesView.swift */,
 				A10000000000000000000014 /* ToolCatalog.swift */,
 				A10000000000000000000015 /* Info.plist */,
+				A10000000000000000000110 /* Nimbus.entitlements */,
 				A10000000000000000000016 /* NimbusAPI.swift */,
 				A10000000000000000000017 /* FileToolView.swift */,
 				A10000000000000000000018 /* FileAcceptance.swift */,
@@ -201,6 +203,7 @@
 				TargetAttributes = {
 					A10000000000000000000040 = {
 						CreatedOnToolsVersion = 26.0;
+						DevelopmentTeam = UQ37S3JVJT;
 					};
 				};
 			};
@@ -289,7 +292,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = Sources/Nimbus/Nimbus.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ37S3JVJT;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Sources/Nimbus/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -304,6 +310,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Sources/Nimbus/Nimbus.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ37S3JVJT;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Sources/Nimbus/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;

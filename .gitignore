@@ -9,6 +9,7 @@ Packages/
 .netrc
 
 # Xcode
+build/
 xcuserdata/
 *.xcuserdatad/
 *.xcscmblueprint

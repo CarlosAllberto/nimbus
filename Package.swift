@@ -13,7 +13,7 @@ let package = Package(
             name: "Nimbus",
             dependencies: [.product(name: "Sparkle", package: "Sparkle")],
             path: "Sources/Nimbus",
-            exclude: ["Info.plist"],
+            exclude: ["Info.plist", "Nimbus.entitlements"],
             // Declared so `swift build` doesn't treat them as stray files. The
             // icon only takes effect in the `.app` the Xcode project builds —
             // `swift build` produces a bare executable with no bundle to carry
