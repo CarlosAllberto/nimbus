@@ -113,6 +113,7 @@ struct FormResultSliceB: View {
             Text(result.password)
                 .font(.system(.title3, design: .monospaced))
                 .textSelection(.enabled)
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(Color.secondary.opacity(0.08))
@@ -120,6 +121,7 @@ struct FormResultSliceB: View {
             CopyButton(text: result.password, label: "Copy Password")
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .frame(maxWidth: .infinity)
         }
     }
 

@@ -7,8 +7,8 @@ import Foundation
 /// `NimbusConfiguration.production.apiBaseURL` (NimbusAPI.swift) tambem e
 /// uma constante hardcoded em vez de vir de Keychain/env var.
 enum SupabaseConfiguration {
-    static let url = URL(string: "https://rzpvhoblozepnjvxzvsv.supabase.co")!
-    static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6cHZob2Jsb3plcG5qdnh6dnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1OTU2NzYsImV4cCI6MjA4MTE3MTY3Nn0.Il0zkyvqZfN8-R97K1gm4HJBZyedPQvhgU6oLUhNeLA"
+    static let url = URL(string: "https://vlmoidiqczbtshjaqewd.supabase.co")!
+    static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbW9pZGlxY3pidHNoamFxZXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzUwODAsImV4cCI6MjEwMjU1MTA4MH0.zAZQT3nXo9SFFFO8lxc6m8IoCKo8RkAv2lImTWksHwk"
 
     /// Loopback HTTP local (RFC 8252) — nao mais um custom URL scheme. Porta
     /// fixa (nao efemera) porque precisa estar cadastrada, literal, na

@@ -56,7 +56,6 @@
 		A10000000000000000000013 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000014 /* ToolCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCatalog.swift; sourceTree = "<group>"; };
 		A10000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A10000000000000000000110 /* Nimbus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nimbus.entitlements; sourceTree = "<group>"; };
 		A10000000000000000000016 /* NimbusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NimbusAPI.swift; sourceTree = "<group>"; };
 		A10000000000000000000017 /* FileToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileToolView.swift; sourceTree = "<group>"; };
 		A10000000000000000000018 /* FileAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileAcceptance.swift; sourceTree = "<group>"; };
@@ -92,6 +91,7 @@
 		A100000000000000000000FD /* Eyedropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Eyedropper.swift; sourceTree = "<group>"; };
 		A100000000000000000000FF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		A10000000000000000000101 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
+		A10000000000000000000110 /* Nimbus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nimbus.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,7 +203,6 @@
 				TargetAttributes = {
 					A10000000000000000000040 = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = UQ37S3JVJT;
 					};
 				};
 			};
