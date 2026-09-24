@@ -4,10 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project memory
 
-Durable lessons live in `docs/memory/lessons.md` (append-only Problem/Cause/Rule/Context
-log) and `docs/memory/rules.md` (the current, canonical rules promoted from
-lessons). Check `rules.md` before making non-obvious decisions; add an entry
-to `lessons.md` after fixing a bug or hitting a gotcha worth remembering.
+Rules and lessons live in Claude Code auto memory, one file per topic:
+`~/.claude/projects/-Users-carlos-Projetos-Treendz-nimbus-swift/memory/`
+(index: `MEMORY.md`). Claude Code loads the index automatically; other agents
+(Kilo, opencode) read that folder by path. Check it before non-obvious
+decisions, and after fixing a bug or hitting a gotcha, add or update a topic
+file there and its line in `MEMORY.md`.
+
+File map (where each type/feature lives): `docs/memory/memory.md`. Start there
+instead of rereading the tree.
 
 ## Commands
 
