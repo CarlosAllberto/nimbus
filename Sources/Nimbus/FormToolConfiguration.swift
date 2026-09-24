@@ -44,6 +44,17 @@ enum FormToolKind: String, CaseIterable {
     /// inside a scroll view.
     var isMinifyTool: Bool { self == .htmlMinify || self == .jsMinify }
 
+    /// Forms built around one text editor lay out without a scroll view, so
+    /// the editor takes the height the pane can spare. Copy Generator's Pages
+    /// step is a growing list, so it keeps scrolling.
+    func fillsHeight(atStep step: Int) -> Bool {
+        switch self {
+        case .htmlMinify, .jsMinify, .waLink, .qrCode: true
+        case .copyGenerator: step != 1
+        default: false
+        }
+    }
+
     /// Titles of the steps a long form is broken into, or nil for the forms
     /// short enough to stay on one page. Declared here, beside the rest of
     /// what varies per tool, so the slices only have to answer "render step

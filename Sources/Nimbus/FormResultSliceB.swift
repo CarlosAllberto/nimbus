@@ -43,7 +43,12 @@ struct FormResultSliceB: View {
             }
         case .waLink:
             decoded(WaLinkResult.self) { result in
-                LinkRow(urlString: result.link)
+                CopyResultCard(
+                    value: result.link,
+                    caption: "Opens a WhatsApp chat",
+                    valueFont: .body,
+                    truncatesMiddle: true
+                )
             }
         // Slice A cases never reach here — `FormResultView` routes them to
         // `FormResultSliceA` first. Kept as defensive fallback only; the
@@ -86,43 +91,19 @@ struct FormResultSliceB: View {
     @ViewBuilder
     private func responsiveFontClampView(_ result: ResponsiveFontClampResult) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            ForEach(Array(result.results.enumerated()), id: \.offset) { index, r in
-                VStack(alignment: .leading, spacing: 8) {
-                    CodeBlockView(
-                        code: r.cssProperty,
-                        suggestedFilename: "clamp-\(index + 1).css",
-                        contentType: UTType(filenameExtension: "css") ?? .plainText
-                    )
-                    KeyValueTable(rows: [
-                        ("Mobile", "\(Int(r.meta.mobileUsed))px"),
-                        ("Desktop", "\(Int(r.meta.desktopFont))px"),
-                        ("Viewport", "\(Int(r.meta.minViewport))–\(Int(r.meta.maxViewport))px"),
-                        ("Mode", r.meta.mobileMode),
-                    ])
-                    if let note = r.meta.note {
-                        Text(note).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
+            ForEach(Array(result.results.enumerated()), id: \.offset) { _, r in
+                CopyResultCard(value: r.clampValue, valueFont: .system(.body, design: .monospaced))
             }
         }
     }
 
     @ViewBuilder
     private func passwordGeneratorView(_ result: PasswordGeneratorResult) -> some View {
-        VStack(spacing: 10) {
-            Text(result.password)
-                .font(.system(.title3, design: .monospaced))
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Color.secondary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            CopyButton(text: result.password, label: "Copy Password")
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
-        }
+        CopyResultCard(
+            value: result.password,
+            copyLabel: "Copy Password",
+            caption: "\(result.password.count) characters"
+        )
     }
 
     @ViewBuilder
@@ -221,22 +202,7 @@ struct ResponsiveFontClampResult: Decodable {
 }
 
 struct ClampResult: Decodable {
-    let cssProperty: String
     let clampValue: String
-    let meta: ClampMeta
-}
-
-struct ClampMeta: Decodable {
-    let mobileUsed: Double
-    let desktopFont: Double
-    let minViewport: Double
-    let maxViewport: Double
-    let slope: Double
-    let interceptPx: Double
-    let mobileMode: String
-    let unit: String
-    let rootPx: Double?
-    let note: String?
 }
 
 struct HtmlMinifyResult: Decodable {

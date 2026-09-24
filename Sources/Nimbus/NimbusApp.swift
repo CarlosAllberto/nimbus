@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import CoreSpotlight
 import SwiftUI
 
 @main
@@ -10,22 +11,15 @@ struct NimbusApp: App {
     var body: some Scene {
         Window("", id: "main") { 
             MainWindowView()
-                .preferredColorScheme(theme.colorScheme)
         }
         .defaultSize(width: 640, height: 504)
         .windowStyle(.titleBar)
         .windowResizability(.contentSize)
-        // DEFENSIVE: Nimbus no longer registers any URL scheme or accepts
-        // external open events (the auth callback switched to loopback HTTP
-        // in `LoopbackAuthServer.swift`), so today there is no event that
-        // would reach here. Measured: without this empty matcher, when an
-        // external event *did* exist (the old `nimbus://` callback) SwiftUI
-        // built a second instance of this scene — `MainWindowView` appeared
-        // twice and a third `NSWindow` was added on top of the existing one,
-        // all before the AppDelegate saw the URL. The empty matcher tells
-        // SwiftUI this scene wants no external events at all, so even if a
-        // scheme/user-activity/Handoff is ever wired up in the future, the
-        // Scene refuses to spawn a duplicate. Costs zero today.
+        // Nimbus handles `nimbus://open` and Core Spotlight activities in
+        // `AppDelegate`. Without this empty matcher SwiftUI answers an external
+        // event by building a second instance of this scene (a duplicate
+        // `MainWindowView` and `NSWindow`) before the delegate sees it; the
+        // empty matcher tells the scene it wants no external events.
         .handlesExternalEvents(matching: [])
 
         Settings {
@@ -90,6 +84,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        // SwiftUI autosaves the sidebar width and restores it over the
+        // `ideal` in MainWindowView; dropping it makes every launch open at
+        // the default width.
+        UserDefaults.standard.removeObject(forKey: "NSSplitView Subview Frames main, SidebarNavigationSplitView")
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -172,8 +170,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Same silent-failure story as Quick Drop: the Search Tools menu item
         // above is the alternate path if ⌘⇧Space is owned elsewhere.
         let spotlightController = SpotlightPanelController(onToolSelected: { [weak self] toolID in
-            SpotlightNavigator.shared.select(toolID)
-            self?.showMainWindow()
+            self?.open(ToolOpenRequest(toolID: toolID, source: .quickSearch))
         })
         self.spotlightController = spotlightController
 
@@ -194,6 +191,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         AuthSession.shared.restoreSessionAtLaunch()
+        SpotlightIndexer.reindex()
 
         observeKeyWindowChanges()
         observeAuthChanges()
@@ -395,6 +393,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         mainWindow.makeKey()
     }
 
+    /// `nimbus://open?tool=...` (see `ToolOpenRequest(deepLink:)`).
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            if let request = ToolOpenRequest(deepLink: url) { open(request) }
+        }
+    }
+
+    /// A tool picked in system Spotlight arrives as a user activity.
+    func application(_ application: NSApplication, continue userActivity: NSUserActivity,
+                     restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void) -> Bool {
+        guard userActivity.activityType == CSSearchableItemActionType,
+              let toolID = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String
+        else { return false }
+        open(ToolOpenRequest(toolID: toolID, source: .coreSpotlight))
+        return true
+    }
+
     /// Clicking the Dock tile on an app with no open window.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         if !hasVisibleWindows { showMainWindow() }
@@ -410,7 +425,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         false
     }
 
+    /// The one entry for opening a tool (quick search, Core Spotlight, deep
+    /// link, Finder). Centers the window only when it was not already on screen.
+    func open(_ request: ToolOpenRequest) {
+        ToolLauncher.shared.open(request)
+        presentMainWindow(centerIfNewlyShown: true)
+    }
+
     @objc private func showMainWindow() {
+        presentMainWindow(centerIfNewlyShown: false)
+    }
+
+    private func presentMainWindow(centerIfNewlyShown: Bool) {
         // Fast path: cached main window is already up. This is the common
         // case (menu click while window is visible, Spotlight selecting a
         // tool, etc.) -- raise it and return.
@@ -434,7 +460,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // already exists (cold launch, first time the menu is invoked
         // before SwiftUI has rendered the View).
         if let window = NSApp.windows.first(where: { $0.contentViewController != nil }) {
-            adopt(window: window)
+            adopt(window: window, centered: centerIfNewlyShown)
             return
         }
 
@@ -452,7 +478,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // guard that needs `lastKeyWindowWasMain` to track when this window
         // becomes key.
         DispatchQueue.main.async { [weak self] in
-            self?.adoptMainWindowIfPresent()
+            self?.adoptMainWindowIfPresent(centered: centerIfNewlyShown)
         }
     }
 
@@ -469,13 +495,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// "cached window is nil OR not visible AND a different window has a
     /// content view controller" -- the latter covers the case where a new
     /// `Window(id:)` instance has appeared since the cache was populated.
-    private func adoptMainWindowIfPresent() {
+    private func adoptMainWindowIfPresent(centered: Bool) {
         if let mainWindow, mainWindow.isVisible {
             return
         }
         if let window = NSApp.windows.first(where: { $0.contentViewController != nil && $0 !== mainWindow }) {
-            adopt(window: window)
+            adopt(window: window, centered: centered)
+            return
         }
+        // Measured: on a cold launch whose *launch reason* is an external
+        // event (`nimbus://…`, a Core Spotlight selection) this scene
+        // declined via `.handlesExternalEvents(matching: [])`, SwiftUI never
+        // auto-presents `Window(id: "main")` at all — no `MainWindowView`
+        // ever gets built, so `MainWindowOpener.openAction` (captured in its
+        // `.onAppear`) stays nil and `openMain()` above was a no-op with
+        // nothing left to retry. A plain launch (Finder/Dock, no event) and
+        // every other path (menu click, Spotlight/deep link while already
+        // running, reopen after close) all reach SwiftUI's window normally;
+        // this is a same-content AppKit-only fallback for that one gap,
+        // adopted through the identical `adopt(window:centered:)` pipeline.
+        let window = NSWindow(contentViewController: NSHostingController(rootView: MainWindowView()))
+        adopt(window: window, centered: centered)
     }
 
     /// Configures the `NSWindow` that backs the main `Window(id:)` Scene
@@ -483,7 +523,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// doesn't (no titlebar text, transparent titlebar, fixed size), and
     /// observes its `willClose` so we can return to accessory activation
     /// policy once it's gone.
-    private func adopt(window: NSWindow) {
+    private func adopt(window: NSWindow, centered: Bool = false) {
         mainWindow = window
         window.isReleasedWhenClosed = false
         observeClose(of: window)
@@ -495,13 +535,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NSApp.setActivationPolicy(.regular)
         applyChrome(to: window)
         // On the reopen path (`openWindow(id:)` after the user closed the
-        // window) SwiftUI applies its own `.windowStyle` *after* this call and
-        // resets `titlebarAppearsTransparent` to false — measured: transparent
-        // on a cold launch, opaque after close+reopen. A second pass on the
-        // next tick makes a reopened window match a freshly launched one.
+        // window) SwiftUI applies its own `.windowStyle` *after* this call
+        // and resets `titlebarAppearsTransparent` to false — measured:
+        // transparent on a cold launch, opaque after close+reopen. A second
+        // pass on the next tick makes a reopened window match a freshly
+        // launched one.
         DispatchQueue.main.async { [weak window] in
             guard let window else { return }
             self.applyChrome(to: window)
+            // After the second chrome pass: it resets the content size, which
+            // moves the frame.
+            if centered { self.centerOnCursorScreen(window) }
         }
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
@@ -511,6 +555,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if NSApp.isActive {
             window.makeKey()
         }
+    }
+
+    /// Centered in `visibleFrame` of the screen under the cursor (fallback
+    /// `.main`), the same rule the Spotlight panel uses.
+    private func centerOnCursorScreen(_ window: NSWindow) {
+        let mouse = NSEvent.mouseLocation
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(mouse) }) ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        window.setFrameOrigin(NSPoint(
+            x: visible.midX - window.frame.width / 2,
+            y: visible.midY - window.frame.height / 2
+        ))
     }
 
     /// The window chrome SwiftUI doesn't supply: no titlebar text, transparent
@@ -582,3 +638,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SidecarProcess.shared.shutdown()
     }
 }
+

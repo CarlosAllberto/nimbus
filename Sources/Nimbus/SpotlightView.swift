@@ -16,16 +16,24 @@ struct SpotlightView: View {
         }
     }
 
+    /// Stable card height, independent of how many results the query returns.
+    /// The panel sizes itself from `hosting.fittingSize`, so the moment the
+    /// results list was conditionally removed from the hierarchy the whole
+    /// window shrank with it — typing "zzz", deleting it, typing "pass" made
+    /// the card collapse and grow back, and after enough cycles it stopped
+    /// coming back at all. Keeping the list in the tree at a fixed height is
+    /// the invariant; an empty state is content, fill it, not a reason to
+    /// redraw the window.
+    private static let listHeight: CGFloat = 240
+
     var body: some View {
         VStack(spacing: 0) {
             field
-            if !results.isEmpty {
-                Divider()
-                resultsList
-            }
+            Divider()
+            resultsList
         }
         .frame(width: 560)
-        .background(GlassBackground(cornerRadius: 16))
+        .background(GlassBackground(cornerRadius: 16, style: .prominent))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .compositingGroup()
         .onAppear { isFieldFocused = true }
@@ -52,16 +60,23 @@ struct SpotlightView: View {
     private var resultsList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 2) {
-                    ForEach(Array(results.enumerated()), id: \.element.id) { index, tool in
-                        SpotlightResultRow(tool: tool, isHighlighted: index == highlightedIndex)
-                            .id(tool.id)
-                            .onTapGesture { onSelect(tool.id) }
+                if results.isEmpty {
+                    Text("No tools match \"\(query)\"")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(16)
+                } else {
+                    LazyVStack(spacing: 2) {
+                        ForEach(Array(results.enumerated()), id: \.element.id) { index, tool in
+                            SpotlightResultRow(tool: tool, isHighlighted: index == highlightedIndex)
+                                .id(tool.id)
+                                .onTapGesture { onSelect(tool.id) }
+                        }
                     }
+                    .padding(8)
                 }
-                .padding(8)
             }
-            .frame(maxHeight: 360)
+            .frame(height: SpotlightView.listHeight)
             .onChange(of: highlightedIndex) { _, newValue in
                 guard results.indices.contains(newValue) else { return }
                 withAnimation(.easeOut(duration: 0.15)) {

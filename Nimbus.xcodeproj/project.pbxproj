@@ -29,7 +29,9 @@
 		A100000000000000000000A0 /* FormResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A1 /* FormResultView.swift */; };
 		A100000000000000000000A2 /* FormResultSliceA.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A3 /* FormResultSliceA.swift */; };
 		A100000000000000000000A4 /* FormResultSliceB.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A5 /* FormResultSliceB.swift */; };
-		A100000000000000000000B0 /* SpotlightNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B1 /* SpotlightNavigator.swift */; };
+		A100000000000000000000B0 /* ToolLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B1 /* ToolLauncher.swift */; };
+		A10000000000000000000B00 /* FirstFieldFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000B01 /* FirstFieldFocus.swift */; };
+		A10000000000000000000B10 /* SpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000B11 /* SpotlightIndexer.swift */; };
 		A100000000000000000000B2 /* SpotlightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B3 /* SpotlightView.swift */; };
 		A100000000000000000000B4 /* SpotlightPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B5 /* SpotlightPanel.swift */; };
 		A100000000000000000000C0 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C1 /* AuthSession.swift */; };
@@ -47,6 +49,8 @@
 		A100000000000000000000FE /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FF /* UpdateChecker.swift */; };
 		A10000000000000000000100 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000101 /* LaunchAtLogin.swift */; };
 		A10000000000000000000104 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000103 /* Sparkle */; };
+		A20000000000000000000001 /* FinderActionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* FinderActionHandler.swift */; };
+		A20000000000000000000010 /* FinderAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FinderAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,7 +78,9 @@
 		A100000000000000000000A1 /* FormResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultView.swift; sourceTree = "<group>"; };
 		A100000000000000000000A3 /* FormResultSliceA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceA.swift; sourceTree = "<group>"; };
 		A100000000000000000000A5 /* FormResultSliceB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceB.swift; sourceTree = "<group>"; };
-		A100000000000000000000B1 /* SpotlightNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightNavigator.swift; sourceTree = "<group>"; };
+		A100000000000000000000B1 /* ToolLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolLauncher.swift; sourceTree = "<group>"; };
+		A10000000000000000000B01 /* FirstFieldFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFieldFocus.swift; sourceTree = "<group>"; };
+		A10000000000000000000B11 /* SpotlightIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexer.swift; sourceTree = "<group>"; };
 		A100000000000000000000B3 /* SpotlightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightView.swift; sourceTree = "<group>"; };
 		A100000000000000000000B5 /* SpotlightPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightPanel.swift; sourceTree = "<group>"; };
 		A100000000000000000000C1 /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
@@ -92,6 +98,10 @@
 		A100000000000000000000FF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		A10000000000000000000101 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		A10000000000000000000110 /* Nimbus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nimbus.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000002 /* FinderActionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderActionHandler.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000000000000000000004 /* FinderAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FinderAction.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000011 /* FinderAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +113,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A20000000000000000000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -111,6 +128,7 @@
 			children = (
 				A10000000000000000000031 /* Sources/Nimbus */,
 				A10000000000000000000093 /* Sidecar */,
+				A20000000000000000000030 /* Extensions/FinderAction */,
 				A10000000000000000000032 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -141,7 +159,9 @@
 				A100000000000000000000A1 /* FormResultView.swift */,
 				A100000000000000000000A3 /* FormResultSliceA.swift */,
 				A100000000000000000000A5 /* FormResultSliceB.swift */,
-				A100000000000000000000B1 /* SpotlightNavigator.swift */,
+				A100000000000000000000B1 /* ToolLauncher.swift */,
+				A10000000000000000000B01 /* FirstFieldFocus.swift */,
+				A10000000000000000000B11 /* SpotlightIndexer.swift */,
 				A100000000000000000000B3 /* SpotlightView.swift */,
 				A100000000000000000000B5 /* SpotlightPanel.swift */,
 				A100000000000000000000C1 /* AuthSession.swift */,
@@ -166,8 +186,19 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000010 /* Nimbus.app */,
+				A20000000000000000000011 /* FinderAction.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A20000000000000000000030 /* Extensions/FinderAction */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000002 /* FinderActionHandler.swift */,
+				A20000000000000000000003 /* Info.plist */,
+				A20000000000000000000004 /* FinderAction.entitlements */,
+			);
+			path = Extensions/FinderAction;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -180,10 +211,12 @@
 				A10000000000000000000043 /* Sources */,
 				A10000000000000000000020 /* Frameworks */,
 				A10000000000000000000042 /* Resources */,
+				A20000000000000000000040 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A20000000000000000000051 /* PBXTargetDependency */,
 			);
 			name = Nimbus;
 			packageProductDependencies = (
@@ -192,6 +225,23 @@
 			productName = Nimbus;
 			productReference = A10000000000000000000010 /* Nimbus.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A20000000000000000000012 /* FinderAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A20000000000000000000060 /* Build configuration list for PBXNativeTarget "FinderAction" */;
+			buildPhases = (
+				A20000000000000000000021 /* Sources */,
+				A20000000000000000000020 /* Frameworks */,
+				A20000000000000000000022 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FinderAction;
+			productName = FinderAction;
+			productReference = A20000000000000000000011 /* FinderAction.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -202,6 +252,9 @@
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					A10000000000000000000040 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					A20000000000000000000012 = {
 						CreatedOnToolsVersion = 26.0;
 					};
 				};
@@ -223,6 +276,7 @@
 			projectRoot = "";
 			targets = (
 				A10000000000000000000040 /* Nimbus */,
+				A20000000000000000000012 /* FinderAction */,
 			);
 		};
 /* End PBXProject section */
@@ -238,7 +292,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A20000000000000000000022 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A20000000000000000000040 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A20000000000000000000010 /* FinderAction.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		A20000000000000000000050 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000000000000000000041 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A20000000000000000000012;
+			remoteInfo = FinderAction;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		A20000000000000000000051 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A20000000000000000000012 /* FinderAction */;
+			targetProxy = A20000000000000000000050 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A10000000000000000000043 /* Sources */ = {
@@ -266,7 +359,9 @@
 				A100000000000000000000A0 /* FormResultView.swift in Sources */,
 				A100000000000000000000A2 /* FormResultSliceA.swift in Sources */,
 				A100000000000000000000A4 /* FormResultSliceB.swift in Sources */,
-				A100000000000000000000B0 /* SpotlightNavigator.swift in Sources */,
+				A100000000000000000000B0 /* ToolLauncher.swift in Sources */,
+				A10000000000000000000B00 /* FirstFieldFocus.swift in Sources */,
+				A10000000000000000000B10 /* SpotlightIndexer.swift in Sources */,
 				A100000000000000000000B2 /* SpotlightView.swift in Sources */,
 				A100000000000000000000B4 /* SpotlightPanel.swift in Sources */,
 				A100000000000000000000C0 /* AuthSession.swift in Sources */,
@@ -281,6 +376,14 @@
 				A100000000000000000000FB /* Eyedropper.swift in Sources */,
 				A100000000000000000000FE /* UpdateChecker.swift in Sources */,
 				A10000000000000000000100 /* LaunchAtLogin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A20000000000000000000021 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20000000000000000000001 /* FinderActionHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,6 +444,44 @@
 			};
 			name = Release;
 		};
+		A20000000000000000000061 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Extensions/FinderAction/FinderAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ37S3JVJT;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Extensions/FinderAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus.FinderAction;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A20000000000000000000062 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Extensions/FinderAction/FinderAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ37S3JVJT;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Extensions/FinderAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../../../../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus.FinderAction;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -358,6 +499,15 @@
 			buildConfigurations = (
 				A10000000000000000000062 /* Debug */,
 				A10000000000000000000063 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A20000000000000000000060 /* Build configuration list for PBXNativeTarget "FinderAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A20000000000000000000061 /* Debug */,
+				A20000000000000000000062 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

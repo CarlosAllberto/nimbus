@@ -253,7 +253,7 @@ enum UsageQuota {
 
 /// Ponte AppKit/qualquer-view -> Preferences, mesmo padrao
 /// `@MainActor ObservableObject` singleton que `AuthSession`/
-/// `SpotlightNavigator` ja usam. `UsageQuota` atualiza depois de cada
+/// `ToolLauncher` ja usam. `UsageQuota` atualiza depois de cada
 /// `checkAndConsume()`/`fetchCurrent()`; `PreferencesView` so le.
 @MainActor
 final class UsageIndicator: ObservableObject {

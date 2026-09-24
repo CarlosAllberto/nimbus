@@ -208,13 +208,15 @@ struct FormFieldsSliceA: View {
                     text: $qrContent,
                     label: "Content",
                     placeholder: "A URL, some text, contact details…",
-                    minHeight: 120
+                    minHeight: 120,
+                    fillsHeight: true
                 )
             }
             FormRow(label: "Center Icon", isOptional: true) {
                 CompactFileField(label: "Center Icon", acceptance: .image, url: $qrIconURL)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .onChange(of: qrContent) { updateQRCodeState() }
         .onChange(of: qrIconURL) { updateQRCodeState() }
         .task { updateQRCodeState() }

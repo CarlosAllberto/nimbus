@@ -55,11 +55,11 @@ struct FormToolView: View {
             .padding(.horizontal, focusRingInset)
 
             ZStack {
-                // A form whose whole body is one code editor has nothing to
-                // scroll — wrapping it would cap the editor at its ideal height
-                // and leave the rest of the pane empty.
+                // A form built around one editor has nothing to scroll —
+                // wrapping it would cap the editor at its ideal height and
+                // leave the rest of the pane empty.
                 Group {
-                    if configuration.kind.isMinifyTool {
+                    if configuration.kind.fillsHeight(atStep: currentStep) {
                         VStack(alignment: .leading, spacing: 20) {
                             fieldsForSlice
                         }
@@ -90,7 +90,11 @@ struct FormToolView: View {
             // change, so the result never needs its own "Done" button floating
             // somewhere else in the panel.
             HStack(spacing: 10) {
-                Spacer()
+                // Same action bar as the file tools: options and Back on the
+                // left, the primary action filling the rest of the row.
+                if result != nil {
+                    Spacer()
+                }
                 if let result {
                     if case let .file(data, suggestedFilename, contentType) = result {
                         Button("Save…") {
@@ -127,15 +131,20 @@ struct FormToolView: View {
                     // there's never a moment where both "Next" and "run this"
                     // are on screen competing for the same Return key.
                     if steps != nil && !isLastStep {
-                        Button("Next") {
+                        Button {
                             withAnimation(.snappy) { currentStep += 1 }
+                        } label: {
+                            Text("Next").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
                         .keyboardShortcut(.defaultAction)
                         .disabled(!currentStepIsValid)
                     } else {
-                        Button(configuration.actionTitle) {
+                        Button {
                             runTask = Task { await runTool() }
+                        } label: {
+                            Text(configuration.actionTitle)
+                                .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
                         .keyboardShortcut(.defaultAction)

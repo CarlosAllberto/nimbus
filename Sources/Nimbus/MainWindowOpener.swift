@@ -16,7 +16,7 @@ import Foundation
 /// `openWindow` no `.onAppear` e deposita aqui; `AppDelegate.showMainWindow()`
 /// chama `openMain()` quando o caminho via `NSWindow` cacheado falha.
 ///
-/// Mesmo padrao que `SpotlightNavigator`/`AuthSession`: `@MainActor`
+/// Mesmo padrao que `ToolLauncher`/`AuthSession`: `@MainActor`
 /// `ObservableObject` singleton.
 @MainActor
 final class MainWindowOpener: ObservableObject {

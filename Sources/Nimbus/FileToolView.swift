@@ -60,25 +60,25 @@ struct FileToolConfiguration: Equatable {
         case .ico:
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Create Favicon")
         case .webM:
-            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: false, actionTitle: "Compress Video")
+            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: true, actionTitle: "Compress Videos")
         case .deviceWrapper:
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Create Wrapper")
         case .trimImage:
-            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Trim Image")
+            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: true, actionTitle: "Trim Images")
         case .convert:
-            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Convert Image")
+            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: true, actionTitle: "Convert Images")
         case .resize:
-            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Resize Image")
+            return .init(kind: kind, acceptance: .image, allowsMultipleFiles: true, actionTitle: "Resize Images")
         case .resizeVideo:
-            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: false, actionTitle: "Resize Video")
+            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: true, actionTitle: "Resize Videos")
         case .upscale:
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: true, actionTitle: "Upscale Images")
         case .toMp3:
-            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: false, actionTitle: "Extract MP3")
+            return .init(kind: kind, acceptance: .video, allowsMultipleFiles: true, actionTitle: "Extract MP3s")
         case .paletteFromImage:
             return .init(kind: kind, acceptance: .image, allowsMultipleFiles: false, actionTitle: "Extract Palette")
         case .fontConvert:
-            return .init(kind: kind, acceptance: .font, allowsMultipleFiles: false, actionTitle: "Convert Font")
+            return .init(kind: kind, acceptance: .font, allowsMultipleFiles: true, actionTitle: "Convert Fonts")
         }
     }
 }
@@ -187,7 +187,7 @@ struct FileToolView: View {
     @State private var dimension = 640
     @State private var paletteColorCount = 5
 
-    init(tool: NimbusTool, configuration: FileToolConfiguration, isSidebarVisible: Bool) {
+    init(tool: NimbusTool, configuration: FileToolConfiguration, isSidebarVisible: Bool, initialFiles: [URL] = []) {
         self.tool = tool
         self.configuration = configuration
         self.isSidebarVisible = isSidebarVisible
@@ -195,6 +195,12 @@ struct FileToolView: View {
         _outputFormat = State(initialValue: configuration.defaultOutputFormat ?? "webp")
         _dimension = State(initialValue: configuration.defaultDimension ?? 640)
         _paletteColorCount = State(initialValue: configuration.defaultPaletteColorCount ?? 5)
+
+        // Re-checked here (not just trusted from the caller): `initialFiles`
+        // can arrive from the Finder extension or a `nimbus://` deep link,
+        // both outside this view's own picker/drop validation.
+        let accepted = initialFiles.filter { configuration.acceptance.accepts($0) }
+        _selectedFiles = State(initialValue: configuration.allowsMultipleFiles ? accepted : Array(accepted.prefix(1)))
     }
 
     var body: some View {
@@ -1030,3 +1036,4 @@ private struct FileThumbnail: View {
         }
     }
 }
+

@@ -95,6 +95,14 @@ final class SpotlightPanelController {
         )
         panel.isOpaque = false
         panel.backgroundColor = .clear
+        // `.prominent` (see `GlassBackground`) is a deliberately dark pane in
+        // both light and dark system appearance. Forcing the *panel's* own
+        // appearance — not just a SwiftUI `colorScheme` override — keeps the
+        // glass material and its text dark together: a `colorScheme` override
+        // alone only recolors the SwiftUI content, while `NSVisualEffectView`/
+        // `glassEffect` still read the real system appearance underneath it,
+        // so a light system appearance produced light-on-light text.
+        panel.appearance = NSAppearance(named: .darkAqua)
         // AppKit computes this from the alpha the window actually renders, so
         // it traces the rounded card. SwiftUI's `.shadow` cannot: the glass
         // backdrop is not a shape it can sample, so it shadows the bounding

@@ -105,7 +105,7 @@ struct QuickDropView: View {
         }
         .padding(18)
         .frame(width: 360)
-        .background(GlassBackground(cornerRadius: 20))
+        .background(GlassBackground(cornerRadius: 20, style: .prominent))
         // Flattens the card into one rounded layer, so nothing the glass draws
         // reaches past the card's silhouette — including into the window shadow
         // AppKit derives from it.

@@ -55,6 +55,8 @@ struct FormFieldsSliceB: View {
     @State private var minViewportWidth = 320
     @State private var maxViewportWidth = 1440
     @State private var desktopFontSizes = ""
+    /// Also how `MainWindowView` points `FirstFieldFocus` at this field.
+    static let desktopFontPlaceholder = "e.g. 16, 18, 24"
     @State private var mobileFontAuto = false
     @State private var mobileFontSize = ""
     @State private var fontClampUnit = "px"
@@ -178,7 +180,7 @@ struct FormFieldsSliceB: View {
                     .accessibilityLabel("Phone number")
             }
             FormRow(label: "Message", isOptional: true) {
-                proseEditor($waMessage, label: "Message", placeholder: "Hi! I saw your website and I'd like to know more about…", minHeight: 70)
+                proseEditor($waMessage, label: "Message", placeholder: "Hi! I saw your website and I'd like to know more about…", minHeight: 70, fillsHeight: true)
             }
             FormRow(label: "Destination") {
                 menuPicker("Destination", selection: $waDestination, options: [
@@ -186,6 +188,7 @@ struct FormFieldsSliceB: View {
                 ], width: 110)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .task { updateWaLinkCanSubmit() }
         .onChange(of: waPhone) { _, _ in updateWaLinkCanSubmit() }
         .onChange(of: waMessage) { _, _ in updateWaLinkCanSubmit() }
@@ -318,7 +321,7 @@ struct FormFieldsSliceB: View {
                 }
             }
             FormRow(label: "Desktop Font Size(s)") {
-                TextField("e.g. 16, 18, 24", text: $desktopFontSizes)
+                TextField(Self.desktopFontPlaceholder, text: $desktopFontSizes)
                     .formFieldChrome()
                     .accessibilityLabel("Desktop font sizes, comma separated")
             }
@@ -373,7 +376,7 @@ struct FormFieldsSliceB: View {
                     }
                 } else {
                     FormRow(label: "Site Description") {
-                        proseEditor($siteDescription, label: "Site description", placeholder: "What the site is about, who it is for, and the tone of voice it should use", minHeight: 100)
+                        proseEditor($siteDescription, label: "Site description", placeholder: "What the site is about, who it is for, and the tone of voice it should use", minHeight: 100, fillsHeight: true)
                     }
                 }
             case 1:
@@ -391,10 +394,11 @@ struct FormFieldsSliceB: View {
                 }
             default:
                 FormRow(label: "Additional Notes", isOptional: true) {
-                    proseEditor($additionalNotes, label: "Additional notes", placeholder: "Anything else the copy should take into account", minHeight: 70)
+                    proseEditor($additionalNotes, label: "Additional notes", placeholder: "Anything else the copy should take into account", minHeight: 70, fillsHeight: true)
                 }
             }
         }
+        .frame(maxHeight: step == 1 ? nil : .infinity, alignment: .top)
         .task { updateCopyGeneratorCanSubmit() }
         .onChange(of: siteDescription) { _, _ in updateCopyGeneratorCanSubmit() }
         .onChange(of: copyPages) { _, _ in updateCopyGeneratorCanSubmit() }
@@ -465,8 +469,9 @@ struct FormFieldsSliceB: View {
         _ text: Binding<String>,
         label: String,
         placeholder: String,
-        minHeight: CGFloat
+        minHeight: CGFloat,
+        fillsHeight: Bool = false
     ) -> some View {
-        FormTextEditor(text: text, label: label, placeholder: placeholder, minHeight: minHeight)
+        FormTextEditor(text: text, label: label, placeholder: placeholder, minHeight: minHeight, fillsHeight: fillsHeight)
     }
 }

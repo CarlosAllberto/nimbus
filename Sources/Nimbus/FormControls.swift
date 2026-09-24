@@ -469,7 +469,48 @@ struct TabbedTextView: View {
     }
 }
 
-/// A clickable URL plus a copy button — WhatsApp Link's only field.
+/// A copyable value with a caption underneath — Password Generator's password
+/// and WhatsApp Link's link. The copy button is `.borderedProminent` at the
+/// regular control size, matching `FormToolView`'s own action button: on
+/// macOS 26 `.controlSize(.large)` turns `.borderedProminent` into a capsule,
+/// which is what made the old Copy buttons here look different from the rest
+/// of the app.
+struct CopyResultCard: View {
+    let value: String
+    var copyLabel: String = "Copy"
+    var caption: String? = nil
+    var valueFont: Font = .system(.title3, design: .monospaced)
+    /// A link reads better truncated to one line: a wrapped link reads as
+    /// broken layout.
+    var truncatesMiddle: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(value)
+                .font(valueFont)
+                .textSelection(.enabled)
+                .lineLimit(truncatesMiddle ? 1 : nil)
+                .truncationMode(truncatesMiddle ? .middle : .tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 12) {
+                if let caption {
+                    Text(caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                CopyButton(text: value, label: copyLabel)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(Color.secondary.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+/// A clickable URL plus a copy button. No current caller — WhatsApp Link
+/// moved to `CopyResultCard` (feature-spec D7) for the same rounded-corners
+/// treatment as the rest of the app's result buttons. Kept rather than
+/// deleted per the spec, in case a future tool wants a plain inline link.
 struct LinkRow: View {
     let urlString: String
 

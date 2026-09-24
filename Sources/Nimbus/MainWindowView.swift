@@ -1,11 +1,17 @@
 import SwiftUI
 
 struct MainWindowView: View {
+    // Applied here, not on the Scene, so the AppKit-hosted fallback window
+    // (`adoptMainWindowIfPresent`) follows the chosen theme too.
+    @AppStorage("nimbusTheme") private var theme: NimbusTheme = .system
     @State private var query = ""
     @State private var selectedToolID = ToolCatalog.tools[0].id
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @FocusState private var isSearchFocused: Bool
-    @ObservedObject private var spotlightNavigator = SpotlightNavigator.shared
+    @ObservedObject private var launcher = ToolLauncher.shared
+    @State private var focusTrigger = 0
+    @State private var pendingFiles: [URL] = []
+    @State private var openCount = 0
     @ObservedObject private var auth = AuthSession.shared
     @ObservedObject private var updateIndicator = UpdateIndicator.shared
     @Environment(\.openWindow) private var openWindow
@@ -33,6 +39,7 @@ struct MainWindowView: View {
                 AuthGateView()
             }
         }
+        .preferredColorScheme(theme.colorScheme)
     }
 
     private var catalog: some View {
@@ -60,7 +67,18 @@ struct MainWindowView: View {
                     }
                 }
                 ScrollViewReader { proxy in
-                    List(selection: $selectedToolID) {
+                    // A distinct binding from the plain `selectedToolID` set
+                    // `openPendingTool` does: a manual sidebar pick clears any
+                    // files a deep link/extension handoff left pending, so
+                    // they never leak into an unrelated tool.
+                    let selection = Binding<String>(
+                        get: { selectedToolID },
+                        set: { newValue in
+                            pendingFiles = []
+                            selectedToolID = newValue
+                        }
+                    )
+                    List(selection: selection) {
                         ForEach(ToolGroup.allCases) { group in
                             let tools = filteredTools.filter { $0.group == group }
                             if !tools.isEmpty {
@@ -79,20 +97,38 @@ struct MainWindowView: View {
                         }
                     }
                     .listStyle(.sidebar)
-                    .onChange(of: spotlightNavigator.pendingToolID) { _, newValue in
-                        guard let newValue else { return }
-                        selectedToolID = newValue
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            proxy.scrollTo(newValue, anchor: .center)
-                        }
-                        _ = spotlightNavigator.consumePendingToolID()
+                    // `onChange` does not fire for a value that is already set
+                    // when the view appears (window reopened, or signed in from
+                    // the gate with a request waiting), so `onAppear` consumes too.
+                    .onChange(of: launcher.pending) { _, _ in
+                        openPendingTool(scrollingWith: proxy)
+                    }
+                    .onAppear {
+                        openPendingTool(scrollingWith: proxy)
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+            .navigationSplitViewColumnWidth(min: 190, ideal: 190, max: 280)
         } detail: {
-            ToolDetailView(tool: selectedTool, isSidebarVisible: columnVisibility != .detailOnly)
-                .id(selectedTool.id)
+            ToolDetailView(
+                tool: selectedTool,
+                isSidebarVisible: columnVisibility != .detailOnly,
+                initialFiles: pendingFiles
+            )
+            // `openCount` (not just the tool id) so a second launcher open of
+            // the *same* tool with new files still gets a fresh `FileToolView`
+            // instead of reusing one whose `selectedFiles` already settled.
+            .id("\(selectedTool.id)-\(openCount)")
+            // File tools open on their drop zone; nothing takes focus there.
+            .background {
+                if FileToolConfiguration.configuration(for: selectedTool.id) == nil {
+                    FirstFieldFocus(
+                        trigger: focusTrigger,
+                        preferredPlaceholder: selectedTool.id == FormToolKind.responsiveFontClamp.rawValue
+                            ? FormFieldsSliceB.desktopFontPlaceholder : nil
+                    )
+                }
+            }
         }
         .background {
             Button("Search") { isSearchFocused = true }
@@ -115,6 +151,20 @@ struct MainWindowView: View {
             // closed-and-not-rebuilt window. `onAppear` will re-register
             // when SwiftUI rebuilds the View on reopen.
             MainWindowOpener.shared.registerOpenAction { }
+        }
+    }
+}
+
+extension MainWindowView {
+    fileprivate func openPendingTool(scrollingWith proxy: ScrollViewProxy) {
+        guard let request = launcher.consume() else { return }
+        guard ToolCatalog.tools.contains(where: { $0.id == request.toolID }) else { return }
+        selectedToolID = request.toolID
+        pendingFiles = request.files
+        openCount += 1
+        focusTrigger += 1
+        withAnimation(.easeOut(duration: 0.15)) {
+            proxy.scrollTo(request.toolID, anchor: .center)
         }
     }
 }
@@ -156,6 +206,7 @@ private struct SidebarSearchField: View {
 private struct ToolDetailView: View {
     let tool: NimbusTool
     let isSidebarVisible: Bool
+    var initialFiles: [URL] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -163,7 +214,8 @@ private struct ToolDetailView: View {
                 FileToolView(
                     tool: tool,
                     configuration: configuration,
-                    isSidebarVisible: isSidebarVisible
+                    isSidebarVisible: isSidebarVisible,
+                    initialFiles: initialFiles
                 )
             } else if let configuration = FormToolConfiguration.configuration(for: tool.id) {
                 FormToolView(tool: tool, configuration: configuration, isSidebarVisible: isSidebarVisible)
