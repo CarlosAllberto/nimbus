@@ -385,7 +385,7 @@ struct FormResultSliceA: View {
             FormTextTab(title: "Text", content: variants.text, filename: "\(base).txt", contentType: .plainText),
             FormTextTab(title: "HTML", content: variants.html, filename: "\(base).html", contentType: .html),
             FormTextTab(title: "React", content: variants.react, filename: "\(base).jsx", contentType: UTType(filenameExtension: "jsx") ?? .plainText),
-        ])
+        ], maxHeight: .infinity)
     }
 }
 

@@ -445,6 +445,7 @@ struct FormTextTab {
 /// (one tab per generated page). The picker hides itself for a single tab.
 struct TabbedTextView: View {
     let tabs: [FormTextTab]
+    var maxHeight: CGFloat = 220
     @State private var selection = 0
 
     var body: some View {
@@ -462,7 +463,8 @@ struct TabbedTextView: View {
                 CodeBlockView(
                     code: tabs[selection].content,
                     suggestedFilename: tabs[selection].filename,
-                    contentType: tabs[selection].contentType
+                    contentType: tabs[selection].contentType,
+                    maxHeight: maxHeight
                 )
             }
         }
@@ -504,39 +506,6 @@ struct CopyResultCard: View {
         .padding(14)
         .background(Color.secondary.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-    }
-}
-
-/// A clickable URL plus a copy button. No current caller — WhatsApp Link
-/// moved to `CopyResultCard` (feature-spec D7) for the same rounded-corners
-/// treatment as the rest of the app's result buttons. Kept rather than
-/// deleted per the spec, in case a future tool wants a plain inline link.
-struct LinkRow: View {
-    let urlString: String
-
-    var body: some View {
-        HStack(spacing: 10) {
-            if let url = URL(string: urlString) {
-                // The label has to be an explicit `Text` for these to apply.
-                // Attached to the `Link` itself they used to work, but under
-                // the macOS 26 SDK they stop reaching the label it generates
-                // from a string, and a long link wraps to a second, indented
-                // line instead of truncating — which reads as a broken layout.
-                // Middle truncation keeps both the domain and the tail
-                // visible; Copy still carries the whole thing.
-                Link(destination: url) {
-                    Text(urlString)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-            } else {
-                Text(urlString)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer(minLength: 0)
-            CopyButton(text: urlString)
-        }
     }
 }
 
