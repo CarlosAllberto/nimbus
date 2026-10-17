@@ -144,6 +144,23 @@
         }
       }
     },
+    "Bottom": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Embaixo"
+          }
+        }
+      }
+    },
     "Check for Updates…": {
       "extractionState": "manual",
       "localizations": {
@@ -620,6 +637,23 @@
         }
       }
     },
+    "Left": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquerda"
+          }
+        }
+      }
+    },
     "Lossless": {
       "extractionState": "manual",
       "localizations": {
@@ -718,6 +752,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir Ajustes"
+          }
+        }
+      }
+    },
+    "Popup position": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Popup position"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição do popup"
           }
         }
       }
@@ -837,6 +888,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reinicie o Nimbus para aplicar o novo idioma."
+          }
+        }
+      }
+    },
+    "Right": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direita"
           }
         }
       }
@@ -1024,6 +1092,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este vídeo não pode ser convertido para esse formato."
+          }
+        }
+      }
+    },
+    "Top": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Em cima"
           }
         }
       }

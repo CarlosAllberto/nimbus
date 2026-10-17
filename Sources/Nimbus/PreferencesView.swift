@@ -36,6 +36,7 @@ private struct GeneralPreferencesTab: View {
     @State private var loginItemStatus = LaunchAtLogin.status
     @AppStorage("nimbusLanguage") private var language = "system"
     @State private var languageChanged = false
+    @AppStorage(QuickDropPreferenceKey.edge) private var edge = QuickDropEdge.right.rawValue
 
     /// Starts a second instance of this app, then quits this one.
     private static func relaunch() {
@@ -89,6 +90,18 @@ private struct GeneralPreferencesTab: View {
                 Text("⌥⇧Q")
                     .font(.body.monospaced())
                     .foregroundStyle(.secondary)
+            }
+
+            LabeledContent(String(localized: "Popup position", bundle: .l10n)) {
+                Picker("", selection: $edge) {
+                    Text("Top", bundle: .l10n).tag(QuickDropEdge.top.rawValue)
+                    Text("Left", bundle: .l10n).tag(QuickDropEdge.left.rawValue)
+                    Text("Bottom", bundle: .l10n).tag(QuickDropEdge.bottom.rawValue)
+                    Text("Right", bundle: .l10n).tag(QuickDropEdge.right.rawValue)
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 160)
             }
 
             // `AppleLanguages` in the app's own defaults is what both the

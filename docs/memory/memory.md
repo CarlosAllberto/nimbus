@@ -30,7 +30,7 @@ Tray-only app: no main window, no sidebar, no login. Quick Drop is the whole UI.
 - `ToolRunner.swift` (~100): `ToolOption`, `ToolChoice` (rows of the option list, Preferences default), `ToolRunner` protocol, `EngineToolRunner` (tool id -> engine).
 - `FileAcceptance.swift` (77): accepted `UTType`s and size limits per input kind.
 - `FileThumbnailImage.swift` (48): thumbnail preview.
-- `QuickDropPanel.swift` (~300) / `QuickDropView.swift` (~450): the popup (6 wells), option list (Up/Down/Return/Esc via the panel), run list, preference keys.
+- `QuickDropPanel.swift` (~300) / `QuickDropView.swift` (~450): the popup (6 wells), option list (Up/Down/Return/Esc via the panel), run list, preference keys, `QuickDropEdge` (popup flush against the top/left/bottom/right screen edge, set in Preferences).
 
 ## Engines (`Sources/Nimbus/Engines/`)
 

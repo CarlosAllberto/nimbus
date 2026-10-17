@@ -6,15 +6,53 @@ enum QuickDropMetrics {
     /// grow from without being clipped by the window bounds.
     static let shadowMargin: CGFloat = 24
 
-    /// The gap the *card* should keep from the top of the screen.
-    static let screenInsetTop: CGFloat = 2
-
     static let wellsWidth: CGFloat = 144
     static let expandedWidth: CGFloat = 232
 
-    /// How far the card runs past the right screen edge, so its rounded
-    /// right-hand corners are off screen and the panel reads as part of it.
-    static let screenBleed: CGFloat = 24
+    /// Side of a well: `wellsWidth` less the card's 18pt padding.
+    static let wellSide: CGFloat = 108
+    static let wellSpacing: CGFloat = 12
+
+    /// Card width with the wells in one row (top/bottom edges).
+    static var barWidth: CGFloat {
+        CGFloat(ToolCatalog.tools.count) * wellSide + CGFloat(ToolCatalog.tools.count - 1) * wellSpacing + 36
+    }
+
+    /// Tallest card in a bar: the run list (36 padding + title + 280 rows).
+    static let barMaxHeight: CGFloat = 360
+}
+
+/// Which screen edge the card sits against, set in `PreferencesView`.
+enum QuickDropEdge: String, CaseIterable {
+    case top, left, bottom, right
+
+    /// Top and bottom lay the wells out in one row.
+    var isHorizontal: Bool { self == .top || self == .bottom }
+
+    /// The card's side that touches the screen: square there, rounded elsewhere.
+    var flatSide: Edge.Set {
+        switch self {
+        case .top: .top
+        case .left: .leading
+        case .bottom: .bottom
+        case .right: .trailing
+        }
+    }
+
+    /// Where the card sits inside the (larger) window.
+    var alignment: Alignment {
+        switch self {
+        case .top: .top
+        case .left: .leading
+        case .bottom: .bottom
+        case .right: .trailing
+        }
+    }
+
+    /// Read at every open, so a change in Preferences applies to the next one.
+    static var current: QuickDropEdge {
+        QuickDropEdge(rawValue: UserDefaults.standard.string(forKey: QuickDropPreferenceKey.edge) ?? "") ?? .right
+    }
 }
 
 /// `@AppStorage` keys for the default choice of each tool that has options,
@@ -26,6 +64,7 @@ enum QuickDropPreferenceKey {
     static let convertFormat = "quickDropConvertFormat"
     static let videoConvertFormat = "quickDropVideoConvertFormat"
     static let icoSafeMargin = "quickDropIcoSafeMargin"
+    static let edge = "quickDropEdge"
 }
 
 /// What each well accepts. Everything is an image except the two video tools;
@@ -84,6 +123,7 @@ private struct QuickDropRun {
 /// showing that drop's progress — see `startRun`.
 struct QuickDropView: View {
     @ObservedObject var session: QuickDropSession
+    let edge: QuickDropEdge
     let onDismiss: () -> Void
 
     @State private var hasAppeared = false
@@ -93,6 +133,8 @@ struct QuickDropView: View {
     private let runner: any ToolRunner = EngineToolRunner()
 
     private static let columns = [GridItem(.flexible())]
+
+    private var isExpanded: Bool { run != nil || session.pending != nil }
 
     private func well(for tool: NimbusTool) -> some View {
         QuickDropWell(
@@ -115,9 +157,19 @@ struct QuickDropView: View {
                 }
                 .transition(.opacity)
             } else {
-                VStack(alignment: .leading, spacing: 12) {
-                    LazyVGrid(columns: Self.columns, spacing: 12) {
-                        ForEach(ToolCatalog.tools) { well(for: $0) }
+                Group {
+                    if edge.isHorizontal {
+                        HStack(spacing: QuickDropMetrics.wellSpacing) {
+                            ForEach(ToolCatalog.tools) {
+                                well(for: $0).frame(width: QuickDropMetrics.wellSide, height: QuickDropMetrics.wellSide)
+                            }
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            LazyVGrid(columns: Self.columns, spacing: 12) {
+                                ForEach(ToolCatalog.tools) { well(for: $0) }
+                            }
+                        }
                     }
                 }
                 .transition(.opacity)
@@ -126,13 +178,12 @@ struct QuickDropView: View {
         .padding(18)
         // Narrow for the wells, wider for the option and run lists, which need
         // room for their text.
-        .frame(width: run == nil && session.pending == nil ? QuickDropMetrics.wellsWidth : QuickDropMetrics.expandedWidth)
-        .padding(.trailing, QuickDropMetrics.screenBleed)
-        .background(GlassBackground(cornerRadius: 20, style: .prominent))
-        // Flattens the card into one rounded layer, so nothing the glass draws
+        .frame(width: isExpanded ? QuickDropMetrics.expandedWidth : (edge.isHorizontal ? nil : QuickDropMetrics.wellsWidth))
+        .background(GlassBackground(cornerRadius: 20, flatSides: edge.flatSide, style: .prominent))
+        // Flattens the card into one layer, so nothing the glass draws
         // reaches past the card's silhouette — including into the window shadow
-        // AppKit derives from it.
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        // AppKit derives from it. The side on the screen edge is square.
+        .clipShape(GlassBackground.shape(cornerRadius: 20, flatSides: edge.flatSide))
         .compositingGroup()
         // No SwiftUI `.shadow` here: it cannot derive a silhouette from the
         // glass backdrop and falls back to the bounding box, which paints a
@@ -143,9 +194,9 @@ struct QuickDropView: View {
         .padding(QuickDropMetrics.shadowMargin)
         .animation(.snappy, value: run == nil)
         .animation(.snappy, value: session.pending == nil)
-        // The window is sized for the tallest state and sits centred on the
-        // screen, so centring the card in it keeps every state centred.
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+        // The window is sized for the largest state and centred along the
+        // edge, so centring the card across it keeps every state centred.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: edge.alignment)
         .onAppear {
             session.onConfirm = { startRun($0) }
             session.flush()

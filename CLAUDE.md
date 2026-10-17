@@ -51,7 +51,10 @@ file.
   `GlassBackground(.prominent)`. Dropping on a well shows an option list
   (compression level, format or margin; Up/Down/Return/Esc handled in
   `QuickDropPanel.sendEvent`, defaults from Preferences), then per-file
-  progress; results go to `~/Nimbus`.
+  progress; results go to `~/Nimbus`. The card sits flush against the screen
+  edge chosen in Preferences (`QuickDropEdge`: top, left, bottom, right; default
+  right), square on that side, centred along it, and slides in from it. Top and
+  bottom lay the wells in one row.
 - **`ToolRunner.swift`** — `ToolOption`/`ToolChoice` and `EngineToolRunner`,
   which maps each tool to its engine.
 - **`Engines/`** — native Swift engines (`ImageCompressor`, `VideoCompressor`
