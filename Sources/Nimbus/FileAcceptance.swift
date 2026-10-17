@@ -1,3 +1,4 @@
+import Foundation
 import UniformTypeIdentifiers
 
 enum FileAcceptance: Equatable {
@@ -19,10 +20,9 @@ enum FileAcceptance: Equatable {
         }
     }
 
-    /// Mirrors `Sidecar/uploadLimits.mjs`. Checked here as well so an oversized
-    /// file fails the moment it is picked, instead of after the whole thing has
-    /// been handed to the sidecar and buffered — for a large video that wait is
-    /// the better part of a minute before the rejection arrives.
+    /// Mirrors the limits in `Engines/EngineSupport.swift`. Checked here as well
+    /// so an oversized file fails the moment it is picked, before an engine
+    /// is started on it.
     var maximumBytes: Int {
         switch self {
         case .image: 250 * 1024 * 1024
@@ -34,15 +34,15 @@ enum FileAcceptance: Equatable {
 
     var maximumSizeMessage: String {
         let megabytes = maximumBytes / (1024 * 1024)
-        return "This \(noun) is larger than the \(megabytes) MB limit."
+        return String(localized: "This \(noun) is larger than the \(megabytes) MB limit.", bundle: .l10n)
     }
 
     var noun: String {
         switch self {
-        case .image: "image"
-        case .video: "video"
-        case .font: "font"
-        case .document: "document"
+        case .image: String(localized: "image", bundle: .l10n)
+        case .video: String(localized: "video", bundle: .l10n)
+        case .font: String(localized: "font", bundle: .l10n)
+        case .document: String(localized: "document", bundle: .l10n)
         }
     }
 

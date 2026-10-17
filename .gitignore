@@ -21,9 +21,6 @@ DerivedData/
 *.dSYM.zip
 *.dSYM
 
-# Node / Sidecar
-Sidecar/node_modules/
-Sidecar/npm-debug.log*
 
 # Secrets — never committed, always local
 .env

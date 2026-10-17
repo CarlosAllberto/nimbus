@@ -86,14 +86,6 @@ jobs:
         run: |
           plutil -replace CFBundleVersion -string "${{ github.run_number }}" Sources/Nimbus/Info.plist
           plutil -replace CFBundleShortVersionString -string "${{ env.VERSION }}" Sources/Nimbus/Info.plist
-      - name: Install Sidecar dependencies
-        # Sidecar/node_modules is gitignored (never committed), and the Xcode
-        # build phase below just copies whatever's on disk into the app's
-        # Resources — without this, the shipped build has a Sidecar folder
-        # with no dependencies installed, and every tool that runs through it
-        # fails for anyone who downloads the build.
-        working-directory: Sidecar
-        run: npm ci --omit=dev
       - name: Build release .app via Xcode
         # swift build only produces a bare executable, not a real .app bundle
         # (no Info.plist, icon, or resources) — see CLAUDE.md. Nimbus.xcodeproj
