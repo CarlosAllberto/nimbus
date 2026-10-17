@@ -1,15 +1,15 @@
 import Foundation
 import Sparkle
 
-/// What the 3 passive UI surfaces (status-bar menu item, Preferences line,
-/// sidebar badge) show once Sparkle's own background check finds something
+/// What the 2 passive UI surfaces (status-bar menu item, Preferences line)
+/// show once Sparkle's own background check finds something
 /// newer than what's running.
 struct UpdateInfo: Equatable {
     let versionString: String
 }
 
-/// Ponte AppKit/qualquer-view -> UI, mesmo padrao `@MainActor ObservableObject`
-/// singleton que `UsageIndicator` ja usa. Mirrors what `AppUpdater` already
+/// Bridge from AppKit/any view to UI, a `@MainActor ObservableObject`
+/// singleton. Mirrors what `AppUpdater` already
 /// knows — there is no separate polling here; `AppUpdater`'s delegate
 /// callbacks are the only thing that writes to this.
 @MainActor
@@ -44,11 +44,14 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate {
 
     private override init() {
         super.init()
-        controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+        // A bare `swift build` executable has no Info.plist for Sparkle to read
+        // (feed URL, signing key), so it would greet every launch with an error
+        // alert. Only a real `.app` starts the updater.
+        let isAppBundle = Bundle.main.bundleURL.pathExtension == "app"
+        controller = SPUStandardUpdaterController(startingUpdater: isAppBundle, updaterDelegate: self, userDriverDelegate: nil)
     }
 
-    /// What every "Update Available" click (menu item, Preferences button,
-    /// sidebar badge) calls — unlike the silent background check this
+    /// What every "Update Available" click (menu item, Preferences button) calls — unlike the silent background check this
     /// controller already runs on its own schedule, this always shows
     /// Sparkle's UI, including a "you're up to date" alert if nothing new
     /// has landed since the last background check.

@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// An activating, borderless-looking panel. `.fileImporter` presents
@@ -16,15 +17,28 @@ final class QuickDropPanel: NSPanel {
     /// well currently has focus.
     var onCancel: (() -> Void)?
 
+    /// Sees key presses before the responder chain does, so Up/Down/Return
+    /// reach the option list whichever SwiftUI view happens to have focus.
+    var keyHandler: ((NSEvent) -> Bool)?
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    /// AppKit would push the transparent shadow margin back below the menu bar,
+    /// leaving a gap above a card meant to sit flush against the top edge.
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, keyHandler?(event) == true { return }
+        super.sendEvent(event)
+    }
 
     override func cancelOperation(_ sender: Any?) {
         onCancel?()
     }
 }
 
-/// Tracks how many file importers are currently presented across the four
+/// Tracks how many file importers are currently presented across the
 /// wells. An `Int`, not a `Bool`, so that one well's transition settling
 /// can't stomp on another's. `.fileImporter` shows `NSOpenPanel` as a sheet,
 /// which resigns the panel's key status; without this guard,
@@ -33,6 +47,42 @@ final class QuickDropPanel: NSPanel {
 @MainActor
 final class QuickDropSession: ObservableObject {
     @Published var importerDepth = 0
+    /// Dropped files waiting on the option list.
+    @Published var pending: QuickDropPending?
+    /// A drop landed on a well; a panel opened by a drag stays for it.
+    var didReceiveDrop = false
+    /// Set by `QuickDropView`, which owns the run.
+    var onConfirm: ((QuickDropPending) -> Void)?
+
+    /// A drop on a well. Tools without options run straight away.
+    func offer(tool: NimbusTool, files: [URL]) {
+        didReceiveDrop = true
+        let choices = tool.choices
+        pending = QuickDropPending(tool: tool, files: files, choices: choices, selection: tool.defaultChoiceIndex)
+        if choices.isEmpty { confirm() }
+    }
+
+    func confirm() {
+        guard let pending, let onConfirm else { return }
+        onConfirm(pending)
+    }
+
+    /// For an offer made before the view had appeared to receive it.
+    func flush() {
+        if pending?.choices.isEmpty == true { confirm() }
+    }
+
+    /// Up/Down move the selection, Return runs it. Anything else is left alone.
+    func handleKey(_ event: NSEvent) -> Bool {
+        guard let pending, !pending.choices.isEmpty else { return false }
+        switch event.keyCode {
+        case 126: self.pending?.selection = max(0, pending.selection - 1)
+        case 125: self.pending?.selection = min(pending.choices.count - 1, pending.selection + 1)
+        case 36, 76: confirm()
+        default: return false
+        }
+        return true
+    }
 }
 
 /// Owns the panel's lifecycle so `AppDelegate` doesn't have to. The panel's
@@ -40,45 +90,107 @@ final class QuickDropSession: ObservableObject {
 /// open, so dropped-then-closed files never survive a close.
 @MainActor
 final class QuickDropPanelController {
-    /// How far the *window* sits from the visible frame. The window is larger
-    /// than the card by `shadowMargin` on every side, so it overhangs by the
-    /// difference — leaving the card itself `screenInsetTop`/`screenInsetTrailing`
-    /// from the respective edge.
-    private static let windowMarginTop = QuickDropMetrics.screenInsetTop - QuickDropMetrics.shadowMargin
-    private static let windowMarginTrailing = QuickDropMetrics.screenInsetTrailing - QuickDropMetrics.shadowMargin
-
     private var panel: QuickDropPanel?
-    private var resignKeyObserver: NSObjectProtocol?
     private var session: QuickDropSession?
-    private var previousFrontmostApp: NSRunningApplication?
+    private var pendingObserver: AnyCancellable?
+    private var dragMonitors: [Any] = []
+    private var lastDragChange = 0
+    private var openedByDrag = false
 
     var isVisible: Bool { panel != nil }
 
     /// Both the hotkey and the status-item menu item call this: open if
-    /// closed, or dismiss (intentionally, restoring focus) if already open.
+    /// closed, or dismiss if already open.
     func toggle() {
         if panel != nil {
-            close(restoringPreviousApp: true)
+            close()
         } else {
             open()
         }
     }
 
-    private func open() {
-        previousFrontmostApp = NSWorkspace.shared.frontmostApplication
+    /// Opens the panel by itself when files are dragged anywhere on screen, so
+    /// there is already a well to drop them on. Global monitors see mouse
+    /// events outside Nimbus without any permission; the drag pasteboard says
+    /// whether the drag carries files.
+    func startWatchingDrags() {
+        guard dragMonitors.isEmpty else { return }
+        lastDragChange = NSPasteboard(name: .drag).changeCount
+        let handlers: [(NSEvent.EventTypeMask, @MainActor @Sendable () -> Void)] = [
+            (.leftMouseDragged, { [weak self] in self?.dragMoved() }),
+            (.leftMouseUp, { [weak self] in self?.mouseReleased() })
+        ]
+        for (mask, handler) in handlers {
+            if let monitor = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: { _ in MainActor.assumeIsolated(handler) }) {
+                dragMonitors.append(monitor)
+            }
+        }
+    }
 
+    private func dragMoved() {
+        let pasteboard = NSPasteboard(name: .drag)
+        // The pasteboard is filled in stages (a HEIC's file URL can land after
+        // the first change), so a change is only spent once it has opened the
+        // panel, and every drag event looks again.
+        guard pasteboard.changeCount != lastDragChange, panel == nil,
+              pasteboard.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true])
+        else { return }
+        lastDragChange = pasteboard.changeCount
+        openedByDrag = true
+        open(takeFocus: false)
+    }
+
+    /// A drag released without reaching a well: nothing was dropped, so the
+    /// panel it opened goes away again. The global monitor can also see the
+    /// release of a drop that lands on the panel itself, before the drop is
+    /// handled, so closing waits a beat and spares a release over the panel.
+    private func mouseReleased() {
+        guard openedByDrag else { return }
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard let self, self.openedByDrag, let panel = self.panel else { return }
+            self.openedByDrag = false
+            if self.session?.didReceiveDrop == false, !panel.frame.contains(NSEvent.mouseLocation) {
+                self.close()
+            }
+        }
+    }
+
+    private func open(takeFocus: Bool = true) {
         let session = QuickDropSession()
         self.session = session
+        // The option list needs the keyboard.
+        pendingObserver = session.$pending.sink { [weak self] pending in
+            if pending != nil { DispatchQueue.main.async { self?.panel?.makeKey() } }
+        }
 
-        let panel = makePanel(session: session)
+        // Read per open, so the setting applies to the next popup.
+        let panel = makePanel(session: session, edge: .current)
         self.panel = panel
-        position(panel)
-        observeResignKey(for: panel)
+        let slideStart = position(panel, edge: .current)
 
-        panel.makeKeyAndOrderFront(nil)
+        // Slide the window itself, not the SwiftUI content: only the axis
+        // across the edge changes, so layout cannot add a stray component.
+        if let slideStart, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            let final = panel.frame
+            panel.setFrameOrigin(slideStart)
+            show(panel, takeFocus: takeFocus)
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.25
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                panel.animator().setFrame(final, display: true)
+            }
+        } else {
+            show(panel, takeFocus: takeFocus)
+        }
         // The window shadow is cached from the alpha at first display; the card
         // fades and scales in, so recompute it once the content is on screen.
         panel.invalidateShadow()
+    }
+
+    /// A panel opened mid-drag must not take focus from the drag.
+    private func show(_ panel: NSPanel, takeFocus: Bool) {
+        if takeFocus { panel.makeKeyAndOrderFront(nil) } else { panel.orderFrontRegardless() }
     }
 
     /// `orderOut`, never `close()`: `close()` posts
@@ -92,31 +204,24 @@ final class QuickDropPanelController {
     /// from going away out from under it regardless of *why* something is
     /// trying to close it; checking this in only one of the callers (as a
     /// previous version did) left the others free to reintroduce the bug.
-    private func close(restoringPreviousApp: Bool) {
+    private func close() {
         guard let panel else { return }
         guard (session?.importerDepth ?? 0) == 0 else { return }
         self.panel = nil
         session = nil
-        if let resignKeyObserver {
-            NotificationCenter.default.removeObserver(resignKeyObserver)
-            self.resignKeyObserver = nil
-        }
+        openedByDrag = false
+        pendingObserver = nil
         panel.orderOut(nil)
-
-        if restoringPreviousApp {
-            previousFrontmostApp?.activate(options: [])
-        }
-        previousFrontmostApp = nil
     }
 
-    private func makePanel(session: QuickDropSession) -> QuickDropPanel {
+    private func makePanel(session: QuickDropSession, edge: QuickDropEdge) -> QuickDropPanel {
         // Borderless, not `.titled`: a titled window reserves a titlebar above
         // the content, so the frame was taller than the card and the card sat
         // that much lower than the requested margin. `canBecomeKey` is
         // overridden, which is what a borderless window needs to take focus.
         // `.nonactivatingPanel` so opening Quick Drop does not activate Nimbus:
-        // activating raises *every* window the app owns, so the main window
-        // would jump in front of whatever the user was working in. Such a panel
+        // activating raises *every* window the app owns (Preferences
+        // included), which would jump in front of whatever the user was working in. Such a panel
         // still becomes key and receives Escape and typing while the app is in
         // the background. The app is activated later, only when a well presents
         // its file importer, since `NSOpenPanel` needs an active app.
@@ -141,20 +246,33 @@ final class QuickDropPanelController {
         // backdrop is not a shape it can sample, so it shadows the bounding
         // box and paints a square halo instead.
         panel.hasShadow = true
-        panel.level = .floating
+        // Against the top edge the card covers the menu bar, which draws above
+        // `.floating`.
+        panel.level = edge == .top ? .statusBar : .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.isReleasedWhenClosed = false
+        // The system's own show animation zooms the window from its centre;
+        // together with the slide in `QuickDropView` it read as a diagonal.
+        panel.animationBehavior = .none
         // Never drawn — there is no titlebar — but VoiceOver announces it, and
         // the panel has no visible heading of its own.
-        panel.title = "Quick Drop"
+        panel.title = String(localized: "Quick Drop", bundle: .l10n)
 
-        panel.onCancel = { [weak self] in
-            self?.close(restoringPreviousApp: true)
+        // Escape backs out of the option list first, then closes the panel.
+        panel.onCancel = { [weak self, weak session] in
+            if session?.pending != nil {
+                session?.pending = nil
+            } else {
+                self?.close()
+            }
+        }
+        panel.keyHandler = { [weak session] event in
+            MainActor.assumeIsolated { session?.handleKey(event) ?? false }
         }
 
         let hosting = NSHostingView(
-            rootView: QuickDropView(session: session, onDismiss: { [weak self] in
-                self?.close(restoringPreviousApp: true)
+            rootView: QuickDropView(session: session, edge: edge, onDismiss: { [weak self] in
+                self?.close()
             })
         )
         // `NSHostingView` backs itself with an opaque layer, which paints the
@@ -164,40 +282,54 @@ final class QuickDropPanelController {
         hosting.layer?.backgroundColor = NSColor.clear.cgColor
         hosting.layer?.isOpaque = false
 
+        // By default the hosting view resizes its window to follow the SwiftUI
+        // content. The window is anchored by its bottom edge, so a resize after
+        // the panel is shown moves the card vertically; size it once instead.
+        // Big enough for the largest state; the card hugs the chosen edge. A
+        // bar's wells state is the shortest, so its height is fixed instead.
+        let margin = 2 * QuickDropMetrics.shadowMargin
+        let size = edge.isHorizontal
+            ? NSSize(width: QuickDropMetrics.barWidth + margin, height: QuickDropMetrics.barMaxHeight + margin)
+            : NSSize(width: QuickDropMetrics.expandedWidth + margin, height: hosting.fittingSize.height)
+        hosting.sizingOptions = []
         panel.contentView = hosting
-        panel.setContentSize(hosting.fittingSize)
+        panel.setContentSize(size)
         return panel
     }
 
     /// The screen under the cursor, falling back to `.main`. `visibleFrame`
-    /// (not `frame`) is what makes the panel respect the menu bar and notch.
-    private func position(_ panel: NSPanel) {
+    /// (not `frame`) is what makes the panel respect the menu bar and Dock,
+    /// except at the top edge, where the card touches the screen itself.
+    /// The card sits flush against `edge`, centred along it; the window
+    /// overhangs the card by `shadowMargin` on every side.
+    /// Returns the window origin just outside that edge, where the slide-in starts.
+    @discardableResult
+    private func position(_ panel: NSPanel, edge: QuickDropEdge) -> NSPoint? {
         let mouseLocation = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) }) ?? NSScreen.main else {
-            return
+            return nil
         }
         let visible = screen.visibleFrame
         let size = panel.frame.size
-        let origin = NSPoint(
-            x: visible.maxX - size.width - Self.windowMarginTrailing,
-            y: visible.maxY - size.height - Self.windowMarginTop
-        )
-        panel.setFrameOrigin(origin)
-    }
-
-    /// Clicking another app resigns key; that is not an intentional
-    /// dismissal, so the previous frontmost app is not restored here. (A
-    /// file-importer sheet in flight is handled by `close(restoringPreviousApp:)`
-    /// itself, not here — see its doc comment.)
-    private func observeResignKey(for panel: NSPanel) {
-        resignKeyObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.didResignKeyNotification,
-            object: panel,
-            queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.close(restoringPreviousApp: false)
-            }
+        let margin = QuickDropMetrics.shadowMargin
+        let centred = NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
+        let origin: NSPoint
+        let start: NSPoint
+        switch edge {
+        case .right:
+            origin = NSPoint(x: visible.maxX - size.width + margin, y: centred.y)
+            start = NSPoint(x: visible.maxX, y: centred.y)
+        case .left:
+            origin = NSPoint(x: visible.minX - margin, y: centred.y)
+            start = NSPoint(x: visible.minX - size.width, y: centred.y)
+        case .top:
+            origin = NSPoint(x: centred.x, y: screen.frame.maxY - size.height + margin)
+            start = NSPoint(x: centred.x, y: screen.frame.maxY)
+        case .bottom:
+            origin = NSPoint(x: centred.x, y: visible.minY - margin)
+            start = NSPoint(x: centred.x, y: visible.minY - size.height)
         }
+        panel.setFrameOrigin(origin)
+        return start
     }
 }

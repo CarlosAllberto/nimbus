@@ -8,100 +8,65 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* NimbusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* NimbusApp.swift */; };
-		A10000000000000000000002 /* MainWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* MainWindowView.swift */; };
 		A10000000000000000000003 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* PreferencesView.swift */; };
 		A10000000000000000000004 /* ToolCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* ToolCatalog.swift */; };
-		A10000000000000000000006 /* NimbusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* NimbusAPI.swift */; };
-		A10000000000000000000007 /* FileToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* FileToolView.swift */; };
 		A10000000000000000000008 /* FileAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* FileAcceptance.swift */; };
-		A10000000000000000000009 /* FormToolConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* FormToolConfiguration.swift */; };
-		A1000000000000000000000A /* FormControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001A /* FormControls.swift */; };
-		A1000000000000000000000B /* FormToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001B /* FormToolView.swift */; };
-		A1000000000000000000000C /* FormFieldsSliceA.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001C /* FormFieldsSliceA.swift */; };
-		A1000000000000000000000D /* FormFieldsSliceB.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* FormFieldsSliceB.swift */; };
 		A1000000000000000000000E /* FileThumbnailImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001E /* FileThumbnailImage.swift */; };
 		A10000000000000000000070 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000080 /* GlobalHotKey.swift */; };
 		A10000000000000000000071 /* QuickDropPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000081 /* QuickDropPanel.swift */; };
 		A10000000000000000000072 /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000082 /* GlassBackground.swift */; };
 		A10000000000000000000073 /* QuickDropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000083 /* QuickDropView.swift */; };
-		A10000000000000000000090 /* SidecarProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000091 /* SidecarProcess.swift */; };
-		A10000000000000000000092 /* Sidecar in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000093 /* Sidecar */; };
-		A100000000000000000000A0 /* FormResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A1 /* FormResultView.swift */; };
-		A100000000000000000000A2 /* FormResultSliceA.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A3 /* FormResultSliceA.swift */; };
-		A100000000000000000000A4 /* FormResultSliceB.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000A5 /* FormResultSliceB.swift */; };
-		A100000000000000000000B0 /* ToolLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B1 /* ToolLauncher.swift */; };
-		A10000000000000000000B00 /* FirstFieldFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000B01 /* FirstFieldFocus.swift */; };
-		A10000000000000000000B10 /* SpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000B11 /* SpotlightIndexer.swift */; };
-		A100000000000000000000B2 /* SpotlightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B3 /* SpotlightView.swift */; };
-		A100000000000000000000B4 /* SpotlightPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000B5 /* SpotlightPanel.swift */; };
-		A100000000000000000000C0 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000C1 /* AuthSession.swift */; };
-		A100000000000000000000D0 /* SupabaseConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D1 /* SupabaseConfiguration.swift */; };
-		A100000000000000000000D2 /* SupabaseAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* SupabaseAuthClient.swift */; };
-		A100000000000000000000D4 /* UsageQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D5 /* UsageQuota.swift */; };
-		A100000000000000000000E0 /* MainWindowOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000E1 /* MainWindowOpener.swift */; };
-		A100000000000000000000F0 /* LoopbackAuthServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F1 /* LoopbackAuthServer.swift */; };
-		A100000000000000000000F2 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F3 /* AuthGateView.swift */; };
-		A100000000000000000000F4 /* ProviderBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F5 /* ProviderBrandMark.swift */; };
 		A100000000000000000000F6 /* Resources/AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F7 /* Resources/AppIcon.icns */; };
+		A100000000000000000000FC /* Resources/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FD /* Resources/Localizable.xcstrings */; };
+		A100000000000000000000FA /* Resources/ffmpeg in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FB /* Resources/ffmpeg */; };
 		A100000000000000000000F8 /* Resources/TrayIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000F9 /* Resources/TrayIcon.png */; };
-		A100000000000000000000FA /* NativeToolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FC /* NativeToolView.swift */; };
-		A100000000000000000000FB /* Eyedropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FD /* Eyedropper.swift */; };
 		A100000000000000000000FE /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000000000000000000FF /* UpdateChecker.swift */; };
+		A10000000000000000000116 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000115 /* L10n.swift */; };
+		A10000000000000000000114 /* ToolRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000111 /* ToolRunner.swift */; };
 		A10000000000000000000100 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000101 /* LaunchAtLogin.swift */; };
 		A10000000000000000000104 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000103 /* Sparkle */; };
-		A20000000000000000000001 /* FinderActionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* FinderActionHandler.swift */; };
-		A20000000000000000000010 /* FinderAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FinderAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000220 /* EngineSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000200 /* EngineSupport.swift */; };
+		A10000000000000000000221 /* WebPCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000201 /* WebPCodec.swift */; };
+		A10000000000000000000222 /* ImageCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000202 /* ImageCompressor.swift */; };
+		A10000000000000000000223 /* ImageConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000203 /* ImageConverter.swift */; };
+		A10000000000000000000224 /* ImageTrimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000204 /* ImageTrimmer.swift */; };
+		A10000000000000000000225 /* FaviconMaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000205 /* FaviconMaker.swift */; };
+		A10000000000000000000228 /* VideoConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000208 /* VideoConverter.swift */; };
+		A10000000000000000000226 /* VideoCompressor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000206 /* VideoCompressor.swift */; };
+		A10000000000000000000227 /* EnginesSelfCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000207 /* EnginesSelfCheck.swift */; };
+		A10000000000000000000240 /* libwebp in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000241 /* libwebp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A10000000000000000000010 /* Nimbus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nimbus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000011 /* NimbusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NimbusApp.swift; sourceTree = "<group>"; };
-		A10000000000000000000012 /* MainWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowView.swift; sourceTree = "<group>"; };
 		A10000000000000000000013 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		A10000000000000000000014 /* ToolCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCatalog.swift; sourceTree = "<group>"; };
 		A10000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A10000000000000000000016 /* NimbusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NimbusAPI.swift; sourceTree = "<group>"; };
-		A10000000000000000000017 /* FileToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileToolView.swift; sourceTree = "<group>"; };
 		A10000000000000000000018 /* FileAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileAcceptance.swift; sourceTree = "<group>"; };
-		A10000000000000000000019 /* FormToolConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormToolConfiguration.swift; sourceTree = "<group>"; };
-		A1000000000000000000001A /* FormControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormControls.swift; sourceTree = "<group>"; };
-		A1000000000000000000001B /* FormToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormToolView.swift; sourceTree = "<group>"; };
-		A1000000000000000000001C /* FormFieldsSliceA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormFieldsSliceA.swift; sourceTree = "<group>"; };
-		A1000000000000000000001D /* FormFieldsSliceB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormFieldsSliceB.swift; sourceTree = "<group>"; };
 		A1000000000000000000001E /* FileThumbnailImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileThumbnailImage.swift; sourceTree = "<group>"; };
 		A10000000000000000000080 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		A10000000000000000000081 /* QuickDropPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDropPanel.swift; sourceTree = "<group>"; };
 		A10000000000000000000082 /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
 		A10000000000000000000083 /* QuickDropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDropView.swift; sourceTree = "<group>"; };
-		A10000000000000000000091 /* SidecarProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidecarProcess.swift; sourceTree = "<group>"; };
-		A10000000000000000000093 /* Sidecar */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sidecar; sourceTree = "<group>"; };
-		A100000000000000000000A1 /* FormResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultView.swift; sourceTree = "<group>"; };
-		A100000000000000000000A3 /* FormResultSliceA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceA.swift; sourceTree = "<group>"; };
-		A100000000000000000000A5 /* FormResultSliceB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormResultSliceB.swift; sourceTree = "<group>"; };
-		A100000000000000000000B1 /* ToolLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolLauncher.swift; sourceTree = "<group>"; };
-		A10000000000000000000B01 /* FirstFieldFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFieldFocus.swift; sourceTree = "<group>"; };
-		A10000000000000000000B11 /* SpotlightIndexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexer.swift; sourceTree = "<group>"; };
-		A100000000000000000000B3 /* SpotlightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightView.swift; sourceTree = "<group>"; };
-		A100000000000000000000B5 /* SpotlightPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightPanel.swift; sourceTree = "<group>"; };
-		A100000000000000000000C1 /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
-		A100000000000000000000D1 /* SupabaseConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfiguration.swift; sourceTree = "<group>"; };
-		A100000000000000000000D3 /* SupabaseAuthClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAuthClient.swift; sourceTree = "<group>"; };
-		A100000000000000000000D5 /* UsageQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageQuota.swift; sourceTree = "<group>"; };
-		A100000000000000000000E1 /* MainWindowOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowOpener.swift; sourceTree = "<group>"; };
-		A100000000000000000000F1 /* LoopbackAuthServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopbackAuthServer.swift; sourceTree = "<group>"; };
-		A100000000000000000000F3 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
-		A100000000000000000000F5 /* ProviderBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderBrandMark.swift; sourceTree = "<group>"; };
 		A100000000000000000000F7 /* Resources/AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Resources/AppIcon.icns; sourceTree = "<group>"; };
+		A100000000000000000000FD /* Resources/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = "<group>"; };
+		A100000000000000000000FB /* Resources/ffmpeg */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = Resources/ffmpeg; sourceTree = "<group>"; };
 		A100000000000000000000F9 /* Resources/TrayIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Resources/TrayIcon.png; sourceTree = "<group>"; };
-		A100000000000000000000FC /* NativeToolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeToolView.swift; sourceTree = "<group>"; };
-		A100000000000000000000FD /* Eyedropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Eyedropper.swift; sourceTree = "<group>"; };
 		A100000000000000000000FF /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		A10000000000000000000115 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		A10000000000000000000111 /* ToolRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolRunner.swift; sourceTree = "<group>"; };
 		A10000000000000000000101 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		A10000000000000000000110 /* Nimbus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nimbus.entitlements; sourceTree = "<group>"; };
-		A20000000000000000000002 /* FinderActionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderActionHandler.swift; sourceTree = "<group>"; };
-		A20000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A20000000000000000000004 /* FinderAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FinderAction.entitlements; sourceTree = "<group>"; };
-		A20000000000000000000011 /* FinderAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000200 /* EngineSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineSupport.swift; sourceTree = "<group>"; };
+		A10000000000000000000201 /* WebPCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPCodec.swift; sourceTree = "<group>"; };
+		A10000000000000000000202 /* ImageCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCompressor.swift; sourceTree = "<group>"; };
+		A10000000000000000000203 /* ImageConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageConverter.swift; sourceTree = "<group>"; };
+		A10000000000000000000204 /* ImageTrimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTrimmer.swift; sourceTree = "<group>"; };
+		A10000000000000000000205 /* FaviconMaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaviconMaker.swift; sourceTree = "<group>"; };
+		A10000000000000000000208 /* VideoConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoConverter.swift; sourceTree = "<group>"; };
+		A10000000000000000000206 /* VideoCompressor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompressor.swift; sourceTree = "<group>"; };
+		A10000000000000000000207 /* EnginesSelfCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnginesSelfCheck.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,13 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000104 /* Sparkle in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A20000000000000000000020 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				A10000000000000000000240 /* libwebp in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,8 +86,6 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000031 /* Sources/Nimbus */,
-				A10000000000000000000093 /* Sidecar */,
-				A20000000000000000000030 /* Extensions/FinderAction */,
 				A10000000000000000000032 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -136,48 +93,26 @@
 		A10000000000000000000031 /* Sources/Nimbus */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000000250 /* Engines */,
 				A10000000000000000000011 /* NimbusApp.swift */,
-				A10000000000000000000012 /* MainWindowView.swift */,
 				A10000000000000000000013 /* PreferencesView.swift */,
 				A10000000000000000000014 /* ToolCatalog.swift */,
 				A10000000000000000000015 /* Info.plist */,
 				A10000000000000000000110 /* Nimbus.entitlements */,
-				A10000000000000000000016 /* NimbusAPI.swift */,
-				A10000000000000000000017 /* FileToolView.swift */,
 				A10000000000000000000018 /* FileAcceptance.swift */,
-				A10000000000000000000019 /* FormToolConfiguration.swift */,
-				A1000000000000000000001A /* FormControls.swift */,
-				A1000000000000000000001B /* FormToolView.swift */,
-				A1000000000000000000001C /* FormFieldsSliceA.swift */,
-				A1000000000000000000001D /* FormFieldsSliceB.swift */,
 				A1000000000000000000001E /* FileThumbnailImage.swift */,
 				A10000000000000000000080 /* GlobalHotKey.swift */,
 				A10000000000000000000081 /* QuickDropPanel.swift */,
 				A10000000000000000000082 /* GlassBackground.swift */,
 				A10000000000000000000083 /* QuickDropView.swift */,
-				A10000000000000000000091 /* SidecarProcess.swift */,
-				A100000000000000000000A1 /* FormResultView.swift */,
-				A100000000000000000000A3 /* FormResultSliceA.swift */,
-				A100000000000000000000A5 /* FormResultSliceB.swift */,
-				A100000000000000000000B1 /* ToolLauncher.swift */,
-				A10000000000000000000B01 /* FirstFieldFocus.swift */,
-				A10000000000000000000B11 /* SpotlightIndexer.swift */,
-				A100000000000000000000B3 /* SpotlightView.swift */,
-				A100000000000000000000B5 /* SpotlightPanel.swift */,
-				A100000000000000000000C1 /* AuthSession.swift */,
-				A100000000000000000000D1 /* SupabaseConfiguration.swift */,
-				A100000000000000000000D3 /* SupabaseAuthClient.swift */,
-				A100000000000000000000D5 /* UsageQuota.swift */,
-				A100000000000000000000E1 /* MainWindowOpener.swift */,
-				A100000000000000000000F1 /* LoopbackAuthServer.swift */,
-				A100000000000000000000F3 /* AuthGateView.swift */,
-				A100000000000000000000F5 /* ProviderBrandMark.swift */,
-				A100000000000000000000FC /* NativeToolView.swift */,
-				A100000000000000000000FD /* Eyedropper.swift */,
 				A100000000000000000000FF /* UpdateChecker.swift */,
 				A10000000000000000000101 /* LaunchAtLogin.swift */,
+				A10000000000000000000111 /* ToolRunner.swift */,
+				A10000000000000000000115 /* L10n.swift */,
 				A100000000000000000000F7 /* Resources/AppIcon.icns */,
 				A100000000000000000000F9 /* Resources/TrayIcon.png */,
+				A100000000000000000000FB /* Resources/ffmpeg */,
+				A100000000000000000000FD /* Resources/Localizable.xcstrings */,
 			);
 			path = Sources/Nimbus;
 			sourceTree = "<group>";
@@ -186,19 +121,24 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000010 /* Nimbus.app */,
-				A20000000000000000000011 /* FinderAction.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A20000000000000000000030 /* Extensions/FinderAction */ = {
+		A10000000000000000000250 /* Engines */ = {
 			isa = PBXGroup;
 			children = (
-				A20000000000000000000002 /* FinderActionHandler.swift */,
-				A20000000000000000000003 /* Info.plist */,
-				A20000000000000000000004 /* FinderAction.entitlements */,
+				A10000000000000000000200 /* EngineSupport.swift */,
+				A10000000000000000000201 /* WebPCodec.swift */,
+				A10000000000000000000202 /* ImageCompressor.swift */,
+				A10000000000000000000203 /* ImageConverter.swift */,
+				A10000000000000000000204 /* ImageTrimmer.swift */,
+				A10000000000000000000205 /* FaviconMaker.swift */,
+				A10000000000000000000206 /* VideoCompressor.swift */,
+				A10000000000000000000208 /* VideoConverter.swift */,
+				A10000000000000000000207 /* EnginesSelfCheck.swift */,
 			);
-			path = Extensions/FinderAction;
+			path = Engines;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -211,37 +151,19 @@
 				A10000000000000000000043 /* Sources */,
 				A10000000000000000000020 /* Frameworks */,
 				A10000000000000000000042 /* Resources */,
-				A20000000000000000000040 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A20000000000000000000051 /* PBXTargetDependency */,
 			);
 			name = Nimbus;
 			packageProductDependencies = (
 				A10000000000000000000103 /* Sparkle */,
+				A10000000000000000000241 /* libwebp */,
 			);
 			productName = Nimbus;
 			productReference = A10000000000000000000010 /* Nimbus.app */;
 			productType = "com.apple.product-type.application";
-		};
-		A20000000000000000000012 /* FinderAction */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A20000000000000000000060 /* Build configuration list for PBXNativeTarget "FinderAction" */;
-			buildPhases = (
-				A20000000000000000000021 /* Sources */,
-				A20000000000000000000020 /* Frameworks */,
-				A20000000000000000000022 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = FinderAction;
-			productName = FinderAction;
-			productReference = A20000000000000000000011 /* FinderAction.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -254,9 +176,6 @@
 					A10000000000000000000040 = {
 						CreatedOnToolsVersion = 26.0;
 					};
-					A20000000000000000000012 = {
-						CreatedOnToolsVersion = 26.0;
-					};
 				};
 			};
 			buildConfigurationList = A10000000000000000000051 /* Build configuration list for PBXProject "Nimbus" */;
@@ -265,18 +184,19 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"pt-BR",
 				Base,
 			);
 			mainGroup = A10000000000000000000030;
 			packageReferences = (
 				A10000000000000000000102 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				A10000000000000000000242 /* XCRemoteSwiftPackageReference "libwebp-Xcode" */,
 			);
 			productRefGroup = A10000000000000000000032 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				A10000000000000000000040 /* Nimbus */,
-				A20000000000000000000012 /* FinderAction */,
 			);
 		};
 /* End PBXProject section */
@@ -286,51 +206,22 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000092 /* Sidecar in Resources */,
 				A100000000000000000000F6 /* Resources/AppIcon.icns in Resources */,
 				A100000000000000000000F8 /* Resources/TrayIcon.png in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A20000000000000000000022 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				A100000000000000000000FA /* Resources/ffmpeg in Resources */,
+				A100000000000000000000FC /* Resources/Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A20000000000000000000040 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				A20000000000000000000010 /* FinderAction.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXContainerItemProxy section */
-		A20000000000000000000050 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A10000000000000000000041 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A20000000000000000000012;
-			remoteInfo = FinderAction;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXTargetDependency section */
-		A20000000000000000000051 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A20000000000000000000012 /* FinderAction */;
-			targetProxy = A20000000000000000000050 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -339,51 +230,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000001 /* NimbusApp.swift in Sources */,
-				A10000000000000000000002 /* MainWindowView.swift in Sources */,
 				A10000000000000000000003 /* PreferencesView.swift in Sources */,
 				A10000000000000000000004 /* ToolCatalog.swift in Sources */,
-				A10000000000000000000006 /* NimbusAPI.swift in Sources */,
-				A10000000000000000000007 /* FileToolView.swift in Sources */,
 				A10000000000000000000008 /* FileAcceptance.swift in Sources */,
-				A10000000000000000000009 /* FormToolConfiguration.swift in Sources */,
-				A1000000000000000000000A /* FormControls.swift in Sources */,
-				A1000000000000000000000B /* FormToolView.swift in Sources */,
-				A1000000000000000000000C /* FormFieldsSliceA.swift in Sources */,
-				A1000000000000000000000D /* FormFieldsSliceB.swift in Sources */,
 				A1000000000000000000000E /* FileThumbnailImage.swift in Sources */,
 				A10000000000000000000070 /* GlobalHotKey.swift in Sources */,
 				A10000000000000000000071 /* QuickDropPanel.swift in Sources */,
 				A10000000000000000000072 /* GlassBackground.swift in Sources */,
 				A10000000000000000000073 /* QuickDropView.swift in Sources */,
-				A10000000000000000000090 /* SidecarProcess.swift in Sources */,
-				A100000000000000000000A0 /* FormResultView.swift in Sources */,
-				A100000000000000000000A2 /* FormResultSliceA.swift in Sources */,
-				A100000000000000000000A4 /* FormResultSliceB.swift in Sources */,
-				A100000000000000000000B0 /* ToolLauncher.swift in Sources */,
-				A10000000000000000000B00 /* FirstFieldFocus.swift in Sources */,
-				A10000000000000000000B10 /* SpotlightIndexer.swift in Sources */,
-				A100000000000000000000B2 /* SpotlightView.swift in Sources */,
-				A100000000000000000000B4 /* SpotlightPanel.swift in Sources */,
-				A100000000000000000000C0 /* AuthSession.swift in Sources */,
-				A100000000000000000000D0 /* SupabaseConfiguration.swift in Sources */,
-				A100000000000000000000D2 /* SupabaseAuthClient.swift in Sources */,
-				A100000000000000000000E0 /* MainWindowOpener.swift in Sources */,
-				A100000000000000000000F0 /* LoopbackAuthServer.swift in Sources */,
-				A100000000000000000000F2 /* AuthGateView.swift in Sources */,
-				A100000000000000000000F4 /* ProviderBrandMark.swift in Sources */,
-				A100000000000000000000D4 /* UsageQuota.swift in Sources */,
-				A100000000000000000000FA /* NativeToolView.swift in Sources */,
-				A100000000000000000000FB /* Eyedropper.swift in Sources */,
 				A100000000000000000000FE /* UpdateChecker.swift in Sources */,
 				A10000000000000000000100 /* LaunchAtLogin.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A20000000000000000000021 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A20000000000000000000001 /* FinderActionHandler.swift in Sources */,
+				A10000000000000000000114 /* ToolRunner.swift in Sources */,
+				A10000000000000000000116 /* L10n.swift in Sources */,
+				A10000000000000000000220 /* EngineSupport.swift in Sources */,
+				A10000000000000000000221 /* WebPCodec.swift in Sources */,
+				A10000000000000000000222 /* ImageCompressor.swift in Sources */,
+				A10000000000000000000223 /* ImageConverter.swift in Sources */,
+				A10000000000000000000224 /* ImageTrimmer.swift in Sources */,
+				A10000000000000000000225 /* FaviconMaker.swift in Sources */,
+				A10000000000000000000226 /* VideoCompressor.swift in Sources */,
+				A10000000000000000000228 /* VideoConverter.swift in Sources */,
+				A10000000000000000000227 /* EnginesSelfCheck.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,44 +311,6 @@
 			};
 			name = Release;
 		};
-		A20000000000000000000061 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Extensions/FinderAction/FinderAction.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UQ37S3JVJT;
-				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = Extensions/FinderAction/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../../../../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus.FinderAction;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A20000000000000000000062 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Extensions/FinderAction/FinderAction.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UQ37S3JVJT;
-				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = Extensions/FinderAction/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../../../../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.treendz.nimbus.FinderAction;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -503,15 +332,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A20000000000000000000060 /* Build configuration list for PBXNativeTarget "FinderAction" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A20000000000000000000061 /* Debug */,
-				A20000000000000000000062 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -523,6 +343,14 @@
 				minimumVersion = 2.6.0;
 			};
 		};
+		A10000000000000000000242 /* XCRemoteSwiftPackageReference "libwebp-Xcode" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/libwebp-Xcode";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -530,6 +358,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A10000000000000000000102 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		A10000000000000000000241 /* libwebp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000242 /* XCRemoteSwiftPackageReference "libwebp-Xcode" */;
+			productName = libwebp;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -24,27 +24,44 @@ enum GlassBackgroundStyle {
 
 struct GlassBackground: View {
     var cornerRadius: CGFloat = 20
+    /// Sides whose corners are square, e.g. a card flush against a screen edge.
+    var flatSides: Edge.Set = []
     var style: GlassBackgroundStyle = .standard
+
+    static func shape(cornerRadius: CGFloat, flatSides: Edge.Set) -> UnevenRoundedRectangle {
+        func radius(_ a: Edge.Set, _ b: Edge.Set) -> CGFloat {
+            flatSides.contains(a) || flatSides.contains(b) ? 0 : cornerRadius
+        }
+        return UnevenRoundedRectangle(
+            topLeadingRadius: radius(.top, .leading),
+            bottomLeadingRadius: radius(.bottom, .leading),
+            bottomTrailingRadius: radius(.bottom, .trailing),
+            topTrailingRadius: radius(.top, .trailing),
+            style: .continuous
+        )
+    }
+
+    private var shape: UnevenRoundedRectangle { Self.shape(cornerRadius: cornerRadius, flatSides: flatSides) }
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         if reduceTransparency {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            shape
                 .fill(Color(nsColor: .windowBackgroundColor))
                 .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    shape
                         .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
                 }
         } else {
             #if compiler(>=6.2)
             if #available(macOS 26, *) {
-                LiquidGlassSurface(cornerRadius: cornerRadius, style: style)
+                LiquidGlassSurface(shape: shape, style: style)
             } else {
-                VisualEffectSurface(cornerRadius: cornerRadius, style: style)
+                VisualEffectSurface(shape: shape, style: style)
             }
             #else
-            VisualEffectSurface(cornerRadius: cornerRadius, style: style)
+            VisualEffectSurface(shape: shape, style: style)
             #endif
         }
     }
@@ -53,7 +70,7 @@ struct GlassBackground: View {
 #if compiler(>=6.2)
 @available(macOS 26, *)
 private struct LiquidGlassSurface: View {
-    let cornerRadius: CGFloat
+    let shape: UnevenRoundedRectangle
     let style: GlassBackgroundStyle
 
     /// `.prominent` tints the pane toward black so it reads as a deeper,
@@ -73,14 +90,14 @@ private struct LiquidGlassSurface: View {
     /// keeps anything the effect draws outside it from reaching the shadow.
     var body: some View {
         Color.clear
-            .glassEffect(.regular.tint(tint), in: .rect(cornerRadius: cornerRadius))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .glassEffect(.regular.tint(tint), in: shape)
+            .clipShape(shape)
     }
 }
 #endif
 
 private struct VisualEffectSurface: View {
-    let cornerRadius: CGFloat
+    let shape: UnevenRoundedRectangle
     let style: GlassBackgroundStyle
 
     /// `.prominent` uses a darker material plus a low-opacity black backing so
@@ -96,15 +113,15 @@ private struct VisualEffectSurface: View {
     var body: some View {
         ZStack {
             VisualEffectView(material: material, blendingMode: .behindWindow)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .clipShape(shape)
             if style == .prominent {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                shape
                     .fill(Color.black.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                    .clipShape(shape)
             }
         }
         .overlay {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            shape
                 .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
         }
     }
