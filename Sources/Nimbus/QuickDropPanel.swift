@@ -96,6 +96,8 @@ final class QuickDropPanelController {
     private var dragMonitors: [Any] = []
     private var lastDragChange = 0
     private var openedByDrag = false
+    /// Where the panel sits off screen; it slides back there on close.
+    private var slideOutOrigin: NSPoint?
 
     var isVisible: Bool { panel != nil }
 
@@ -109,8 +111,8 @@ final class QuickDropPanelController {
         }
     }
 
-    /// Opens the panel by itself when files are dragged anywhere on screen, so
-    /// there is already a well to drop them on. Global monitors see mouse
+    /// Opens the panel by itself when files are dragged anywhere on screen
+    /// while ⌘ is held, so there is already a well to drop them on. Global monitors see mouse
     /// events outside Nimbus without any permission; the drag pasteboard says
     /// whether the drag carries files.
     func startWatchingDrags() {
@@ -129,10 +131,19 @@ final class QuickDropPanelController {
 
     private func dragMoved() {
         let pasteboard = NSPasteboard(name: .drag)
+        // Letting go of ⌘ mid-drag hides the panel again, unless a drop already
+        // landed. The change stays unspent so pressing ⌘ again reopens it.
+        if openedByDrag, !NSEvent.modifierFlags.contains(.command), session?.didReceiveDrop == false {
+            lastDragChange = 0
+            close()
+            return
+        }
         // The pasteboard is filled in stages (a HEIC's file URL can land after
         // the first change), so a change is only spent once it has opened the
         // panel, and every drag event looks again.
-        guard pasteboard.changeCount != lastDragChange, panel == nil,
+        // Only while ⌘ is held, so ordinary drags don't pop the panel up.
+        guard NSEvent.modifierFlags.contains(.command),
+              pasteboard.changeCount != lastDragChange, panel == nil,
               pasteboard.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true])
         else { return }
         lastDragChange = pasteboard.changeCount
@@ -145,6 +156,7 @@ final class QuickDropPanelController {
     /// release of a drop that lands on the panel itself, before the drop is
     /// handled, so closing waits a beat and spares a release over the panel.
     private func mouseReleased() {
+        lastDragChange = NSPasteboard(name: .drag).changeCount
         guard openedByDrag else { return }
         Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 400_000_000)
@@ -168,6 +180,7 @@ final class QuickDropPanelController {
         let panel = makePanel(session: session, edge: .current)
         self.panel = panel
         let slideStart = position(panel, edge: .current)
+        slideOutOrigin = slideStart
 
         // Slide the window itself, not the SwiftUI content: only the axis
         // across the edge changes, so layout cannot add a stray component.
@@ -211,7 +224,21 @@ final class QuickDropPanelController {
         session = nil
         openedByDrag = false
         pendingObserver = nil
-        panel.orderOut(nil)
+        guard let out = slideOutOrigin, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else {
+            panel.orderOut(nil)
+            return
+        }
+        // Slide back out the way it came in, then hide.
+        panel.ignoresMouseEvents = true
+        var frame = panel.frame
+        frame.origin = out
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().setFrame(frame, display: true)
+        } completionHandler: {
+            panel.orderOut(nil)
+        }
     }
 
     private func makePanel(session: QuickDropSession, edge: QuickDropEdge) -> QuickDropPanel {
