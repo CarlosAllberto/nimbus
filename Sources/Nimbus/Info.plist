@@ -24,7 +24,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://github.com/CarlosAllberto/nimbus-desktop-releases/releases/download/latest/appcast.xml</string>
+	<string>https://github.com/CarlosAllberto/nimbus/releases/download/latest/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>GlkQVJj0UobZhEWxC6daqCNZR87inqBp94f0V1Kk2Xs=</string>
 	<key>SUEnableAutomaticChecks</key>

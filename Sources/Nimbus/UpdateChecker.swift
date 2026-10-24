@@ -27,7 +27,7 @@ final class UpdateIndicator: ObservableObject {
 /// Owns Sparkle's updater for the app's lifetime. `SPUStandardUpdaterController`
 /// runs its own background schedule (`SUEnableAutomaticChecks` +
 /// `SUScheduledCheckInterval` in Info.plist) against `SUFeedURL`
-/// (nimbus-desktop-releases' "latest" release, `appcast.xml`, published and
+/// (nimbus' "latest" release, `appcast.xml`, published and
 /// EdDSA-signed by CI's publish-build job) and, through the default
 /// `SPUStandardUserDriver`, pops Sparkle's own native "Update Available"
 /// alert — release notes, Install & Relaunch — with no custom UI code needed
