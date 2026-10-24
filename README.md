@@ -22,9 +22,11 @@
   <a href="#how-it-works">How it works</a>
 </p>
 
+<p align="center">English &bull; <a href="README.pt-BR.md">Português</a></p>
+
 Drag a file, pick an option, done. Nimbus is a macOS menu-bar app that compresses and converts images and videos from a small popup that slides in from the edge of your screen. Everything runs on your Mac, with no account and no upload.
 
-![Nimbus Quick Drop: the tool wells, the compression options, and the results](docs/assets/quick-drop.png)
+![Nimbus Quick Drop: the tool wells, the compression options, and the results](docs/assets/quick-drop.jpg)
 
 ## Features
 
