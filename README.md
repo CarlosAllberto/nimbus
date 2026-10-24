@@ -32,7 +32,7 @@ Requires macOS 14 or later. Once installed, Nimbus updates itself with Sparkle.
 
 ## Usage
 
-1. Open Quick Drop with **⌥⇧Q**, from the menu-bar icon, or by dragging files while holding **⌘**.
+1. Open Quick Drop with **⌥Q**, from the menu-bar icon, or by dragging files while holding **⌘**.
 2. Drop the files on a tool.
 3. Pick an option, such as the compression level, and press Return.
 4. Find the results in `~/Nimbus`.

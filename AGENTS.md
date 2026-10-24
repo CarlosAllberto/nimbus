@@ -42,7 +42,7 @@ file.
 - **`NimbusApp.swift`** — `@main` is a plain `NSApplication` entry point (no SwiftUI
   `App`: its `Settings` scene opened a window on every launch). `AppDelegate`
   owns the status item/menu (Quick Drop, Check for Updates, Preferences,
-  Quit), the Preferences `NSWindow`, the Quick Drop global hotkey (⌥⇧Q) and
+  Quit), the Preferences `NSWindow`, the Quick Drop global hotkey (⌥Q) and
   Sparkle (started only inside a real `.app`).
 - **`ToolCatalog.swift`** — static catalog of the six `NimbusTool`s
   (to-webp, to-webm, ico, trim-image, convert, video-convert). Each is one Quick Drop well.

@@ -2,17 +2,17 @@ import AppKit
 import Carbon.HIToolbox
 import Foundation
 
-/// Fixed Quick Drop shortcut, ⌥⇧Q. A single constant, no capture UI this
+/// Fixed Quick Drop shortcut, ⌥Q. A single constant, no capture UI this
 /// round — see the Quick Drop plan. A global hot key wins over the frontmost
 /// app's own menu shortcuts, so this deliberately avoids ⌘-based combinations
 /// that apps commonly bind.
 enum QuickDropShortcut {
     static let keyCode = UInt32(kVK_ANSI_Q)
-    static let modifiers = UInt32(optionKey | shiftKey)
+    static let modifiers = UInt32(optionKey)
 
     /// The same combination expressed for an `NSMenuItem`.
     static let menuKeyEquivalent = "q"
-    static let menuModifiers: NSEvent.ModifierFlags = [.option, .shift]
+    static let menuModifiers: NSEvent.ModifierFlags = [.option]
 }
 
 /// Thin wrapper over Carbon's `RegisterEventHotKey`. Carbon is the right tool

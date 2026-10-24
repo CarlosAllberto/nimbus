@@ -87,7 +87,7 @@ private struct GeneralPreferencesTab: View {
             // The shortcut is a fixed constant (see `QuickDropShortcut`), so
             // it is shown, not edited.
             LabeledContent(String(localized: "Quick Drop Shortcut", bundle: .l10n)) {
-                Text("⌥⇧Q")
+                Text("⌥Q")
                     .font(.body.monospaced())
                     .foregroundStyle(.secondary)
             }

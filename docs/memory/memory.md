@@ -22,7 +22,7 @@ Tray-only app: no main window, no sidebar, no login. Quick Drop is the whole UI.
 - `PreferencesView.swift` (~150): tabs General (launch at login, shortcut, version/update) and Quick Drop (default option per tool: compression level, convert format, favicon margin).
 - `UpdateChecker.swift` (80): Sparkle `AppUpdater`, `UpdateIndicator`.
 - `LaunchAtLogin.swift` (37): `SMAppService` toggle.
-- `GlobalHotKey.swift` (~110): `QuickDropShortcut` (⌥⇧Q), Carbon hotkey wrapper.
+- `GlobalHotKey.swift` (~110): `QuickDropShortcut` (⌥Q), Carbon hotkey wrapper.
 
 ## Tools and Quick Drop
 
