@@ -4,6 +4,24 @@
 
 <h1 align="center">Nimbus</h1>
 
+<p align="center"><b>Compress and convert images and videos from the macOS menu bar.</b></p>
+
+<p align="center">
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-lightgrey?style=flat-square">
+  <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-orange?style=flat-square">
+  <img alt="Native, no web view" src="https://img.shields.io/badge/UI-native-blue?style=flat-square">
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+  <a href="https://github.com/CarlosAllberto/nimbus/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/CarlosAllberto/nimbus/ci.yml?branch=main&style=flat-square&label=CI"></a>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> &bull;
+  <a href="#install">Install</a> &bull;
+  <a href="#usage">Usage</a> &bull;
+  <a href="#build-from-source">Build from source</a> &bull;
+  <a href="#how-it-works">How it works</a>
+</p>
+
 Drag a file, pick an option, done. Nimbus is a macOS menu-bar app that compresses and converts images and videos from a small popup that slides in from the edge of your screen. Everything runs on your Mac, with no account and no upload.
 
 ![Nimbus Quick Drop: the tool wells, the compression options, and the results](docs/assets/quick-drop.png)
