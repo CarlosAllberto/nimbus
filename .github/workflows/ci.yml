@@ -59,7 +59,7 @@ jobs:
         # human-readable release notes, RFC 2822 for the appcast (RSS/pubDate's
         # own format). VERSION (0.1.<build>) is the one human-readable version
         # string shared by Info.plist's CFBundleShortVersionString, the
-        # appcast, the versioned GitHub release tag, and the Homebrew cask —
+        # appcast and the version shown in the app —
         # a single number to bump would be nicer, but nothing here has a
         # human deciding on real semver bumps, so the always-unique,
         # always-increasing build number is what actually stays true.
@@ -82,7 +82,7 @@ jobs:
         # keeps its placeholder "1" for
         # local/Xcode dev builds, which is deliberately always older than
         # anything published. CFBundleShortVersionString gets the same
-        # treatment now that VERSION feeds the appcast and the Homebrew cask
+        # treatment now that VERSION feeds the appcast
         # too — it stays the committed "0.1.0" placeholder for local builds.
         run: |
           plutil -replace CFBundleVersion -string "${{ github.run_number }}" Sources/Nimbus/Info.plist
@@ -155,63 +155,5 @@ jobs:
             gh release create latest --repo "$REPO" --target "${{ github.sha }}" --title "Nimbus (latest build)" --notes "$NOTES"
           fi
           gh release upload latest build/Build/Products/Release/Nimbus.zip build/Build/Products/Release/appcast.xml --repo "$REPO" --clobber
-      - name: Publish a versioned release for Homebrew
-        env:
-          GH_TOKEN: ${{ github.token }}
-        # Unlike "latest" above, this tag is never touched again once
-        # created — Homebrew casks need a URL+checksum pair that stays valid
-        # forever once published, or `brew upgrade` and reinstalling an old
-        # version both break. One new release per push to main, same as
-        # "latest"'s own cadence.
-        run: |
-          REPO=CarlosAllberto/nimbus
-          gh release create "v${{ env.VERSION }}" build/Build/Products/Release/Nimbus.zip \
-            --repo "$REPO" \
-            --target "${{ github.sha }}" \
-            --title "Nimbus ${{ env.VERSION }}" \
-            --notes "Automatic build from CarlosAllberto/nimbus@${{ github.sha }} (build ${{ github.run_number }}), built ${{ env.BUILT_AT }}.
-
-          Unsigned: no Apple Developer ID on this build. If Gatekeeper blocks it, right-click Nimbus.app > Open, or allow it in System Settings > Privacy & Security."
-      - name: Update the Homebrew tap
-        env:
-          # A PAT with Contents: read/write on CarlosAllberto/homebrew-nimbus
-          # only; GITHUB_TOKEN cannot write to another repo.
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          SHA256=$(shasum -a 256 build/Build/Products/Release/Nimbus.zip | cut -d' ' -f1)
-          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/CarlosAllberto/homebrew-nimbus.git" tap
-          cat > tap/Casks/nimbus.rb <<CASK
-          cask "nimbus" do
-            version "${{ env.VERSION }}"
-            sha256 "$SHA256"
-
-            url "https://github.com/CarlosAllberto/nimbus/releases/download/v#{version}/Nimbus.zip"
-            name "Nimbus"
-            desc "Menu-bar toolbox for web, image, code, and utility tools"
-            homepage "https://www.nimbushelp.com/"
-
-            # Nimbus updates itself via Sparkle once installed — brew upgrade is a
-            # catch-up path, not the primary update channel.
-            auto_updates true
-            # Unsigned: no Apple Developer ID on this build. Gatekeeper blocks it on
-            # first launch unless the user right-clicks > Open, or allows it in System
-            # Settings > Privacy & Security.
-
-            depends_on macos: :sonoma
-
-            app "Nimbus.app"
-
-            zap trash: [
-              "~/Library/Caches/com.treendz.nimbus",
-              "~/Library/Preferences/com.treendz.nimbus.plist",
-            ]
-          end
-          CASK
-          cd tap
-          git config user.name "nimbus-ci"
-          git config user.email "ci@nimbushelp.com"
-          git add Casks/nimbus.rb
-          git commit -m "nimbus ${{ env.VERSION }}"
-          git push
       - name: Print download link
         run: echo "Download -> https://github.com/CarlosAllberto/nimbus/releases/download/latest/Nimbus.zip"
