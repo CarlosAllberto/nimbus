@@ -150,9 +150,9 @@ jobs:
           Unsigned: no Apple Developer ID on this build. If Gatekeeper blocks it, right-click Nimbus.app > Open, or allow it in System Settings > Privacy & Security."
 
           if gh release view latest --repo "$REPO" >/dev/null 2>&1; then
-            gh release edit latest --repo "$REPO" --title "Nimbus (latest build)" --notes "$NOTES"
+            gh release edit latest --repo "$REPO" --latest --title "Nimbus (latest build)" --notes "$NOTES"
           else
-            gh release create latest --repo "$REPO" --target "${{ github.sha }}" --title "Nimbus (latest build)" --notes "$NOTES"
+            gh release create latest --repo "$REPO" --latest --target "${{ github.sha }}" --title "Nimbus (latest build)" --notes "$NOTES"
           fi
           gh release upload latest build/Build/Products/Release/Nimbus.zip build/Build/Products/Release/appcast.xml --repo "$REPO" --clobber
       - name: Print download link
