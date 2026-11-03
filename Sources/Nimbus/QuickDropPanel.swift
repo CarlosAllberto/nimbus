@@ -148,7 +148,7 @@ final class QuickDropPanelController {
         else { return }
         lastDragChange = pasteboard.changeCount
         openedByDrag = true
-        open(takeFocus: false)
+        open()
     }
 
     /// A drag released without reaching a well: nothing was dropped, so the
@@ -168,7 +168,7 @@ final class QuickDropPanelController {
         }
     }
 
-    private func open(takeFocus: Bool = true) {
+    private func open() {
         let session = QuickDropSession()
         self.session = session
         // The option list needs the keyboard.
@@ -187,23 +187,18 @@ final class QuickDropPanelController {
         if let slideStart, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             let final = panel.frame
             panel.setFrameOrigin(slideStart)
-            show(panel, takeFocus: takeFocus)
+            panel.makeKeyAndOrderFront(nil)
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.25
                 context.timingFunction = CAMediaTimingFunction(name: .easeOut)
                 panel.animator().setFrame(final, display: true)
             }
         } else {
-            show(panel, takeFocus: takeFocus)
+            panel.makeKeyAndOrderFront(nil)
         }
         // The window shadow is cached from the alpha at first display; the card
         // fades and scales in, so recompute it once the content is on screen.
         panel.invalidateShadow()
-    }
-
-    /// A panel opened mid-drag must not take focus from the drag.
-    private func show(_ panel: NSPanel, takeFocus: Bool) {
-        if takeFocus { panel.makeKeyAndOrderFront(nil) } else { panel.orderFrontRegardless() }
     }
 
     /// `orderOut`, never `close()`: `close()` posts
